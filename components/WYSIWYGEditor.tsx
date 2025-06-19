@@ -558,7 +558,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
                       }
                     }}
                     autoFocus
-                    className="bg-white border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="bg-white border border-gray-300 rounded focus:outline-none focus:ring-2 pl-1 focus:ring-blue-500"
                   />
                 ) : (
                   <span
@@ -767,7 +767,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
 
     return (
       <div className="border rounded">
-        <div className="border-b bg-muted p-3">
+        <div className="border-b bg-gray-50 p-3">
           <div className="flex flex-wrap items-center gap-2">
             <Select
               value={

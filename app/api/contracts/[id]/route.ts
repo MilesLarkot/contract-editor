@@ -22,7 +22,6 @@ export async function PUT(request: { json: () => any }, { params }: any) {
 
 export async function PATCH(request: { json: () => any }, { params }: any) {
   const body = await request.json();
-  console.log(body);
   const updated = await Contract.findByIdAndUpdate(
     params.id,
     { $set: body },

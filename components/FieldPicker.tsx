@@ -28,8 +28,8 @@ interface FieldPickerProps {
   setFinalFields: (field: Field) => void;
   updateField: (field: { fieldName: string; fieldValue: string }) => void;
   initialFields: Field[];
-  // Add this prop to receive updates from the editor
   onFieldValueChange?: (fieldName: string, fieldValue: string) => void;
+  isTemplate: boolean;
 }
 
 function FieldPicker({
@@ -37,11 +37,11 @@ function FieldPicker({
   updateField,
   initialFields,
   onFieldValueChange,
+  isTemplate,
 }: FieldPickerProps) {
   const [fields, setFields] = useState<Field[]>(initialFields);
   const [nameErrors, setNameErrors] = useState<Map<number, string>>(new Map());
 
-  // Update fields when initialFields changes
   useEffect(() => {
     setFields(initialFields);
   }, [initialFields]);
@@ -66,7 +66,6 @@ function FieldPicker({
     setNameErrors(errors);
   }, [fields]);
 
-  // Listen for field value updates from the editor
   useEffect(() => {
     const handler = (
       e: CustomEvent<{ fieldName: string; fieldValue: string }>
@@ -80,7 +79,6 @@ function FieldPicker({
         return updated;
       });
 
-      // Call the callback if provided
       if (onFieldValueChange) {
         onFieldValueChange(fieldName, fieldValue);
       }
@@ -187,7 +185,7 @@ function FieldPicker({
               onChange={(e) =>
                 handleFieldUpdate({ ...field, fieldValue: e.target.value })
               }
-              disabled={nameErrors.has(field.id)}
+              disabled={nameErrors.has(field.id) || isTemplate}
             />
           </div>
 

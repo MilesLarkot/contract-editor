@@ -19,7 +19,7 @@ interface ContractData {
 
 async function fetchContract(id: string): Promise<ContractData | null> {
   try {
-    const response = await fetch(`http://localhost:3000/api/contracts/${id}`, {
+    const response = await fetch(`http://localhost:3000/api/templates/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -32,7 +32,7 @@ async function fetchContract(id: string): Promise<ContractData | null> {
       if (response.status === 404) {
         return null;
       }
-      throw new Error(`Failed to fetch contract: ${response.statusText}`);
+      throw new Error(`Failed to fetch template: ${response.statusText}`);
     }
 
     const contract = await response.json();
@@ -43,7 +43,7 @@ async function fetchContract(id: string): Promise<ContractData | null> {
       fields: contract.fields,
     };
   } catch (err) {
-    console.error("Error fetching contract:", err);
+    console.error("Error fetching template:", err);
     return null;
   }
 }
@@ -69,7 +69,7 @@ export default async function ContractEditPage({
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="/contracts">Contracts</BreadcrumbLink>
+              <BreadcrumbLink href="/templates">Templates</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
@@ -78,7 +78,7 @@ export default async function ContractEditPage({
           </BreadcrumbList>
         </Breadcrumb>
       </header>
-      <ContractPage contractData={contractData} />
+      <ContractPage contractData={contractData} isTemplate={true} />
     </div>
   );
 }

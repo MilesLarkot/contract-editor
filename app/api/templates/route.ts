@@ -8,3 +8,9 @@ export async function POST(req: Request) {
   const template = await Template.create(body);
   return NextResponse.json(template);
 }
+
+export async function GET() {
+  await connectDB();
+  const templates = await Template.find({}).lean();
+  return NextResponse.json(templates);
+}
