@@ -15,6 +15,14 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
+interface Contract {
+  _id: string;
+  title: string;
+  content: string;
+  updatedAt: string;
+  fields?: Record<string, string>;
+}
+
 export default function ClientContractList() {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +49,7 @@ export default function ClientContractList() {
     });
 
     if (res.ok) {
-      setContracts((prev) => prev.filter((c: any) => c._id !== id));
+      setContracts((prev) => prev.filter((c: Contract) => c._id !== id));
     } else {
       alert("Failed to delete contract");
     }
@@ -74,7 +82,7 @@ export default function ClientContractList() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {contracts.map((contract: any) => (
+        {contracts.map((contract: Contract) => (
           <TableRow
             key={contract._id}
             className="cursor-pointer"

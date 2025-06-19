@@ -20,7 +20,6 @@ import {
 } from "slate";
 import { withHistory } from "slate-history";
 
-// Shadcn components
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -149,7 +148,6 @@ const initialValue: Descendant[] = [
   { type: "paragraph", children: [{ text: "" }] },
 ];
 
-// Styling utility functions
 const isMarkActive = (editor: ReactEditor, format: string) => {
   const marks = Editor.marks(editor);
   return marks ? marks[format as keyof typeof marks] === true : false;

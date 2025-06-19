@@ -21,6 +21,32 @@ interface ContractPageProps {
   isTemplate?: boolean;
 }
 
+interface TextNode {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  code?: boolean;
+  superscript?: boolean;
+  subscript?: boolean;
+  color?: string;
+  backgroundColor?: string;
+  fontSize?: string;
+}
+
+interface NodeType {
+  type?: string;
+  fieldName?: string;
+  fieldValue?: string;
+  children?: TextNode[];
+  elementId?: string;
+  align?: "left" | "center" | "right" | "justify";
+  level?: 1 | 2 | 3 | 4 | 5 | 6;
+  url?: string;
+  [key: string]: unknown;
+}
+
 export default function ContractPage({
   contractData,
   isTemplate = false,
@@ -177,7 +203,7 @@ export default function ContractPage({
         try {
           const parsed = JSON.parse(prevContent || "[]");
           if (Array.isArray(parsed)) {
-            const updatedContent = parsed.map((node: any) => {
+            const updatedContent = parsed.map((node: NodeType) => {
               if (
                 node.type === "field" &&
                 node.fieldName === updatedField.fieldName

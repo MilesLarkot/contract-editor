@@ -1,7 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Contract from "@/models/contract";
 
-export async function GET(request: any, { params }: any) {
+interface Params {
+  id: string;
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Params }
+) {
   const contract = await Contract.findById(params.id)
     .select("title content fields")
     .lean();
@@ -10,7 +17,10 @@ export async function GET(request: any, { params }: any) {
   return NextResponse.json(contract);
 }
 
-export async function PUT(request: { json: () => any }, { params }: any) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Params }
+) {
   const body = await request.json();
   const updated = await Contract.findByIdAndUpdate(params.id, body, {
     new: true,
@@ -20,7 +30,10 @@ export async function PUT(request: { json: () => any }, { params }: any) {
   return NextResponse.json(updated);
 }
 
-export async function PATCH(request: { json: () => any }, { params }: any) {
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Params }
+) {
   const body = await request.json();
   const updated = await Contract.findByIdAndUpdate(
     params.id,
@@ -31,11 +44,13 @@ export async function PATCH(request: { json: () => any }, { params }: any) {
   ).lean();
   if (!updated)
     return NextResponse.json({ error: "Contract Not found" }, { status: 404 });
-  console.log("updated:", updated);
   return NextResponse.json(updated);
 }
 
-export async function DELETE(request: any, { params }: any) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Params }
+) {
   const deleted = await Contract.findByIdAndDelete(params.id).lean();
   if (!deleted)
     return NextResponse.json({ error: "Contract Not found" }, { status: 404 });

@@ -15,6 +15,14 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
+interface Template {
+  _id: string;
+  title: string;
+  content: string;
+  updatedAt: string;
+  fields?: Record<string, string>;
+}
+
 export default function ClientTemplatesList() {
   const [templates, setTemplates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +48,7 @@ export default function ClientTemplatesList() {
     });
 
     if (res.ok) {
-      setTemplates((prev) => prev.filter((t: any) => t._id !== id));
+      setTemplates((prev) => prev.filter((t: Template) => t._id !== id));
     } else {
       alert("Failed to delete template");
     }
@@ -73,7 +81,7 @@ export default function ClientTemplatesList() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {templates.map((template: any) => (
+        {templates.map((template: Template) => (
           <TableRow
             key={template._id}
             className="cursor-pointer"
