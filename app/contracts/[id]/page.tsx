@@ -19,12 +19,17 @@ interface ContractData {
 
 async function fetchContract(id: string): Promise<ContractData | null> {
   try {
-    const response = await fetch(`http://localhost:3000/api/contracts/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(
+      `http://localhost:3000/api/contracts/${id}?t=${Date.now()}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+        },
+        cache: "no-store",
+      }
+    );
 
     if (!response.ok) {
       if (response.status === 404) {

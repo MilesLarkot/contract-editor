@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Delete, Loader2 } from "lucide-react";
 import {
   Table,
@@ -70,6 +69,7 @@ export default function ClientContractList() {
         <TableRow>
           <TableHead className="w-[100px]">Title</TableHead>
           <TableHead>Last Updated</TableHead>
+          <TableHead>Content</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -84,7 +84,7 @@ export default function ClientContractList() {
           >
             <TableCell>{contract.title}</TableCell>
             <TableCell>{format(new Date(contract.updatedAt), "PPP")}</TableCell>
-
+            <TableCell>{contract.content}</TableCell>
             <TableCell>
               <Button
                 variant="destructive"

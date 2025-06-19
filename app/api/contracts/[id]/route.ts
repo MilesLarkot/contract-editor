@@ -22,6 +22,7 @@ export async function PUT(request: { json: () => any }, { params }: any) {
 
 export async function PATCH(request: { json: () => any }, { params }: any) {
   const body = await request.json();
+  console.log(body);
   const updated = await Contract.findByIdAndUpdate(
     params.id,
     { $set: body },
@@ -31,6 +32,7 @@ export async function PATCH(request: { json: () => any }, { params }: any) {
   ).lean();
   if (!updated)
     return NextResponse.json({ error: "Contract Not found" }, { status: 404 });
+  console.log("updated:", updated);
   return NextResponse.json(updated);
 }
 

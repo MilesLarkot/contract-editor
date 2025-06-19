@@ -41,6 +41,7 @@ export default function ContractPage({ contractData }: ContractPageProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(!!id); // Track fetch status
   const isSavingRef = useRef(false);
   const editorRef = useRef<WYSIWYGEditorHandle>(null);
   const debouncedSaveRef = useRef<ReturnType<typeof debounce>>();
@@ -48,6 +49,7 @@ export default function ContractPage({ contractData }: ContractPageProps) {
   const fetchContractData = useCallback(async () => {
     if (!id) {
       console.log("No contract ID provided, skipping fetch");
+      setIsLoading(false);
       return;
     }
 
@@ -65,6 +67,7 @@ export default function ContractPage({ contractData }: ContractPageProps) {
       if (response.ok) {
         const data: ContractData = await response.json();
         console.log("Fetched contract data:", data);
+        console.log("Fetched content:", data.content);
         setTitle(data.title || "");
         setContent(data.content || "");
         setFields(
@@ -93,6 +96,8 @@ export default function ContractPage({ contractData }: ContractPageProps) {
           err instanceof Error ? err.message : "Unknown error"
         }`
       );
+    } finally {
+      setIsLoading(false); // Mark fetch as complete
     }
   }, [id]);
 
@@ -106,7 +111,7 @@ export default function ContractPage({ contractData }: ContractPageProps) {
     if (id) {
       fetchContractData();
     } else {
-      console.log("No ID, initializing new contract state");
+      setIsLoading(false);
     }
   }, [id, contractData, fetchContractData]);
 
@@ -116,7 +121,6 @@ export default function ContractPage({ contractData }: ContractPageProps) {
     fieldValue: string;
   }) => {
     setFields((prev) => {
-      // Reject if fieldName is non-empty and already exists
       if (
         field.fieldName &&
         prev.some((f) => f.fieldName === field.fieldName)
@@ -138,25 +142,23 @@ export default function ContractPage({ contractData }: ContractPageProps) {
     console.log("🔄 updateField called with:", updatedField);
 
     setFields((prev) => {
-      // Find the field being updated
       const targetField = prev.find(
         (f) => f.fieldName === updatedField.fieldName
       );
       if (!targetField) {
-        console.log(`❌ No field found with name "${updatedField.fieldName}"`);
+        console.log(`No field found with name "${updatedField.fieldName}"`);
         return prev;
       }
-      // Check for duplicate fieldName from other fields
       const duplicateExists = prev.some(
         (f) => f.fieldName === updatedField.fieldName && f.id !== targetField.id
       );
       if (duplicateExists && updatedField.fieldName !== "") {
         console.log(
-          `❌ Duplicate field name "${updatedField.fieldName}" detected, skipping update`
+          `Duplicate field name "${updatedField.fieldName}" detected, skipping update`
         );
         return prev;
       }
-      console.log("✅ Updating field successfully");
+      console.log("Updating field successfully");
       const newFields = prev.map((f) =>
         f.id === targetField.id
           ? {
@@ -199,23 +201,23 @@ export default function ContractPage({ contractData }: ContractPageProps) {
   };
 
   const saveContract = useCallback(async () => {
-    console.log("🚀 saveContract called");
-    console.log("📊 Current state:", {
+    console.log("saveContract called");
+    console.log("Current state:", {
       title,
-      content: content.substring(0, 100) + "...", // Truncate for logging
+      content: content.substring(0, 100) + "...",
       fieldsCount: fields.length,
       contractId,
       isSaving: isSavingRef.current,
     });
 
     if (isSavingRef.current) {
-      console.log("⏳ Save already in progress, skipping");
+      console.log("Save already in progress, skipping");
       return;
     }
     isSavingRef.current = true;
 
     if (!title && !content && fields.length === 0) {
-      console.log("📝 No data to save, skipping.");
+      console.log("No data to save, skipping.");
       isSavingRef.current = false;
       return;
     }
@@ -232,7 +234,7 @@ export default function ContractPage({ contractData }: ContractPageProps) {
         }, {} as Record<string, string>),
       };
 
-      console.log("📤 Sending data:", contractDataToSave);
+      console.log("Sending data:", contractDataToSave);
 
       setIsSaving(true);
       setSaveError(null);
@@ -242,7 +244,7 @@ export default function ContractPage({ contractData }: ContractPageProps) {
         ? `/api/contracts/${contractId}`
         : "/api/contracts";
 
-      console.log(`🌐 Making ${method} request to ${url}`);
+      console.log(`Making ${method} request to ${url}`);
 
       const response = await fetch(url, {
         method,
@@ -252,25 +254,25 @@ export default function ContractPage({ contractData }: ContractPageProps) {
         body: JSON.stringify(contractDataToSave),
       });
 
-      console.log("📡 Response status:", response.status);
+      console.log("Response status:", response.status);
 
       if (response.ok) {
         const result = await response.json();
-        console.log("✅ Save successful, response:", result);
+        console.log("Save successful, response:", result);
         if (!contractId && (result._id || result.id)) {
           const newId = result._id || result.id;
-          console.log(`🔥 New contract created. Updating ID to: ${newId}`);
+          console.log(`New contract created. Updating ID to: ${newId}`);
           setContractId(newId);
           window.history.replaceState(null, "", `/contracts/${newId}/edit`);
         }
         setLastSaved(new Date().toLocaleTimeString());
       } else {
         const errorText = await response.text();
-        console.error("❌ Save failed:", response.status, errorText);
+        console.error("Save failed:", response.status, errorText);
         setSaveError(`Save failed: ${response.status} ${errorText}`);
       }
     } catch (err) {
-      console.error("💥 Error saving contract:", err);
+      console.error("Error saving contract:", err);
       setSaveError(
         `Error saving contract: ${
           err instanceof Error ? err.message : "Unknown error"
@@ -286,13 +288,14 @@ export default function ContractPage({ contractData }: ContractPageProps) {
     console.log(
       "Content changed in ContractPage:",
       content.length,
-      "characters"
+      "characters",
+      content
     );
   }, [content]);
 
   useEffect(() => {
     debouncedSaveRef.current = debounce(() => {
-      console.log("⏰ Debounced save triggered with contractId:", contractId);
+      console.log("Debounced save triggered with contractId:", contractId);
       saveContract();
     }, 2000);
 
@@ -313,6 +316,10 @@ export default function ContractPage({ contractData }: ContractPageProps) {
   };
 
   useEffect(() => {
+    if (isLoading) {
+      console.log("Skipping autosave: data is still loading");
+      return;
+    }
     console.log("State changed, scheduling autosave:", {
       title,
       content: content.substring(0, 50) + "...",
@@ -325,7 +332,7 @@ export default function ContractPage({ contractData }: ContractPageProps) {
       console.log("Cleaning up debounced save");
       debouncedSaveRef.current?.cancel();
     };
-  }, [title, content, fields, triggerDebouncedSave]);
+  }, [title, content, fields, contractId, isLoading, triggerDebouncedSave]);
 
   return (
     <div className="pr-[300px] h-screen">
@@ -333,8 +340,12 @@ export default function ContractPage({ contractData }: ContractPageProps) {
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="bg-white p-4 drop-shadow-[5px_5px_0_rgba(0,0,0,0.10)] rounded space-y-4">
             <div className="flex justify-between items-center">
-              <Button type="submit" disabled={isSaving}>
-                {isSaving ? "Saving..." : "Save Contract"}
+              <Button type="submit" disabled={isSaving || isLoading}>
+                {isSaving
+                  ? "Saving..."
+                  : isLoading
+                  ? "Loading..."
+                  : "Save Contract"}
               </Button>
               <div className="mr-auto ml-2">
                 <ExportButton title={title} content={content} />
