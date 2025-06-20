@@ -10,9 +10,10 @@ import {
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+const baseUrl =
+  process.env.VERCEL_URL !== undefined
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000";
 
 interface ContractData {
   id: string;
