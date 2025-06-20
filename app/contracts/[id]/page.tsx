@@ -10,6 +10,8 @@ import {
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 const baseUrl =
   process.env.VERCEL_URL !== undefined
     ? `https://${process.env.VERCEL_URL}`
