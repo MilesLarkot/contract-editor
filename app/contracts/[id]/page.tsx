@@ -10,6 +10,8 @@ import {
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
 interface ContractData {
   id: string;
   title: string;
@@ -19,7 +21,7 @@ interface ContractData {
 
 async function fetchContract(id: string): Promise<ContractData | null> {
   try {
-    const response = await fetch(`http://localhost:3000/api/contracts/${id}`, {
+    const response = await fetch(`${baseUrl}/api/contracts/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
