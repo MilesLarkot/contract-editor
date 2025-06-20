@@ -12,10 +12,10 @@ import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-// const baseUrl =
-//   process.env.VERCEL_URL !== undefined
-//     ? `https://${process.env.VERCEL_URL}`
-//     : "http://localhost:3000";
+const baseUrl =
+  process.env.VERCEL_URL !== undefined
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000";
 
 interface ContractData {
   id: string;
@@ -26,17 +26,14 @@ interface ContractData {
 
 async function fetchContract(id: string): Promise<ContractData | null> {
   try {
-    const response = await fetch(
-      `${process.env.VERCEL_URL}/api/contracts/${id}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache",
-        },
-        cache: "no-store",
-      }
-    );
+    const response = await fetch(`${baseUrl}/api/contracts/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+      },
+      cache: "no-store",
+    });
 
     if (!response.ok) {
       if (response.status === 404) {
