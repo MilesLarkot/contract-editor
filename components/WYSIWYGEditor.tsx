@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight } from "lucide-react";
 
 interface FieldElement {
   type: "field";
@@ -950,7 +951,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
               }}
               title="Align Left"
             >
-              ⬅
+              <AlignLeft />
             </Button>
 
             <Button
@@ -964,7 +965,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
               }}
               title="Align Center"
             >
-              ↔
+              <AlignCenter />
             </Button>
 
             <Button
@@ -978,7 +979,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
               }}
               title="Align Right"
             >
-              ➡
+              <AlignRight />
             </Button>
 
             <Button
@@ -994,7 +995,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
               }}
               title="Justify"
             >
-              ≡
+              <AlignJustify />
             </Button>
 
             <Separator orientation="vertical" className="h-6 mx-1" />
