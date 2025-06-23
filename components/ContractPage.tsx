@@ -2,12 +2,19 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Inspector from "@/components/Inspector";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import WYSIWYGEditor, { WYSIWYGEditorHandle } from "@/components/WYSIWYGEditor";
 import { useParams } from "next/navigation";
-import { debounce } from "lodash";
 import ExportButton from "./ExportButton";
 import InspectorButton from "./InspectorButton";
+import { useDebouncedSave } from "@/hooks/useDebounceSave";
+import { useAutoSaveContract } from "@/hooks/useAutoSaveContract";
+import { useLoadContract } from "@/hooks/useLoadContract";
+import { useContractData } from "@/hooks/useContractData";
+import { updateFieldsState } from "@/hooks/updateFieldState";
+import { syncEditorField } from "@/hooks/syncEditorField";
+import { updateContentJson } from "@/hooks/updateContentJson";
+import { useSaveContract } from "@/hooks/useSaveContract";
 
 interface ContractData {
   id?: string;
@@ -19,32 +26,6 @@ interface ContractData {
 interface ContractPageProps {
   contractData?: ContractData;
   isTemplate?: boolean;
-}
-
-interface TextNode {
-  text: string;
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  strikethrough?: boolean;
-  code?: boolean;
-  superscript?: boolean;
-  subscript?: boolean;
-  color?: string;
-  backgroundColor?: string;
-  fontSize?: string;
-}
-
-interface NodeType {
-  type?: string;
-  fieldName?: string;
-  fieldValue?: string;
-  children?: TextNode[];
-  elementId?: string;
-  align?: "left" | "center" | "right" | "justify";
-  level?: 1 | 2 | 3 | 4 | 5 | 6;
-  url?: string;
-  [key: string]: unknown;
 }
 
 export default function ContractPage({
@@ -69,85 +50,23 @@ export default function ContractPage({
   const [title, setTitle] = useState(contractData?.title || "");
   const [content, setContent] = useState(contractData?.content || "");
   const [contractId, setContractId] = useState<string | null>(id);
-  const [isSaving, setIsSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const [localSaveError, setSaveError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(!!id);
-  const isSavingRef = useRef(false);
   const editorRef = useRef<WYSIWYGEditorHandle>(null);
-  const debouncedSaveRef = useRef<ReturnType<typeof debounce>>();
   const [isActive, setIsActive] = useState(false);
 
-  const fetchContractData = useCallback(async () => {
-    if (!id) {
-      setIsLoading(false);
-      return;
-    }
+  const { fetchContractData } = useContractData({
+    id,
+    isTemplate,
+    setTitle,
+    setContent,
+    setFields,
+    setContractId,
+    setIsLoading,
+    setSaveError,
+  });
 
-    try {
-      const response = await fetch(
-        `/api/${isTemplate ? "templates" : "contracts"}/${id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache",
-          },
-          cache: "no-store",
-        }
-      );
-
-      if (response.ok) {
-        const data: ContractData = await response.json();
-        setTitle(data.title || "");
-        setContent(data.content || "");
-        setFields(
-          data.fields
-            ? Object.entries(data.fields).map(
-                ([fieldName, fieldValue], index) => ({
-                  id: index,
-                  fieldName,
-                  fieldValue,
-                })
-              )
-            : []
-        );
-        setContractId(data.id || id);
-      } else {
-        const errorText = await response.text();
-        console.error(
-          `Failed to fetch ${isTemplate ? "template" : "contract"}:`,
-          response.status,
-          errorText
-        );
-        setSaveError(
-          `Failed to fetch ${isTemplate ? "template" : "contract"}: ${
-            response.status
-          } ${errorText}`
-        );
-      }
-    } catch (err) {
-      console.error(
-        `Error fetching ${isTemplate ? "template" : "contract"}:`,
-        err
-      );
-      setSaveError(
-        `Error fetching ${isTemplate ? "template" : "contract"}: ${
-          err instanceof Error ? err.message : "Unknown error"
-        }`
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id, isTemplate]);
-
-  useEffect(() => {
-    if (id) {
-      fetchContractData();
-    } else {
-      setIsLoading(false);
-    }
-  }, [id, contractData, fetchContractData]);
+  useLoadContract(id, fetchContractData, setIsLoading);
 
   const addField = (field: {
     id: number;
@@ -169,140 +88,20 @@ export default function ContractPage({
     fieldName: string;
     fieldValue: string;
   }) => {
-    setFields((prev) => {
-      const targetField = prev.find(
-        (f) => f.fieldName === updatedField.fieldName
-      );
-      if (!targetField) {
-        return prev;
-      }
-      const duplicateExists = prev.some(
-        (f) => f.fieldName === updatedField.fieldName && f.id !== targetField.id
-      );
-      if (duplicateExists && updatedField.fieldName !== "") {
-        return prev;
-      }
-      const newFields = prev.map((f) =>
-        f.id === targetField.id
-          ? {
-              ...f,
-              fieldName: updatedField.fieldName,
-              fieldValue: updatedField.fieldValue,
-            }
-          : f
-      );
-      return newFields;
-    });
-
-    if (editorRef.current && updatedField.fieldName) {
-      editorRef.current.updateFieldValue(
-        updatedField.fieldName,
-        updatedField.fieldValue
-      );
-      setContent((prevContent) => {
-        try {
-          const parsed = JSON.parse(prevContent || "[]");
-          if (Array.isArray(parsed)) {
-            const updatedContent = parsed.map((node: NodeType) => {
-              if (
-                node.type === "field" &&
-                node.fieldName === updatedField.fieldName
-              ) {
-                return { ...node, fieldValue: updatedField.fieldValue };
-              }
-              return node;
-            });
-            return JSON.stringify(updatedContent);
-          }
-        } catch (err) {
-          console.error("Error updating content:", err);
-        }
-        return prevContent;
-      });
-    }
+    setFields((prev) => updateFieldsState(prev, updatedField));
+    syncEditorField(editorRef, updatedField);
+    setContent((prev) => updateContentJson(prev, updatedField));
   };
 
-  const saveContract = useCallback(async () => {
-    if (isSavingRef.current) {
-      return;
-    }
-    isSavingRef.current = true;
+  const { saveContract, isSaving, lastSaved, saveError } = useSaveContract({
+    title,
+    content,
+    fields,
+    contractId,
+    isTemplate,
+  });
 
-    if (!title && !content && fields.length === 0) {
-      isSavingRef.current = false;
-      return;
-    }
-
-    try {
-      const contractDataToSave = {
-        title,
-        content,
-        fields: fields.reduce((acc, field) => {
-          if (field.fieldName) {
-            acc[field.fieldName] = field.fieldValue;
-          }
-          return acc;
-        }, {} as Record<string, string>),
-      };
-
-      setIsSaving(true);
-      setSaveError(null);
-
-      const method = contractId ? "PATCH" : "POST";
-      const url = contractId
-        ? `/api/${isTemplate ? "templates" : "contracts"}/${contractId}`
-        : `/api/${isTemplate ? "templates" : "contracts"}`;
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(contractDataToSave),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (!contractId && (result._id || result.id)) {
-          const newId = result._id || result.id;
-          setContractId(newId);
-          window.history.replaceState(
-            null,
-            "",
-            `/${isTemplate ? "templates" : "contracts"}/${newId}`
-          );
-        }
-        setLastSaved(new Date().toLocaleTimeString());
-      } else {
-        const errorText = await response.text();
-        console.error("Save failed:", response.status, errorText);
-        setSaveError(`Save failed: ${response.status} ${errorText}`);
-      }
-    } catch (err) {
-      console.error(
-        `Error saving ${isTemplate ? "template" : "contract"}:`,
-        err
-      );
-      setSaveError(
-        `Error saving ${isTemplate ? "template" : "contract"}: ${
-          err instanceof Error ? err.message : "Unknown error"
-        }`
-      );
-    } finally {
-      setIsSaving(false);
-      isSavingRef.current = false;
-    }
-  }, [title, content, fields, contractId, isTemplate]);
-
-  useEffect(() => {
-    debouncedSaveRef.current = debounce(() => {
-      saveContract();
-    }, 2000);
-
-    return () => {
-      debouncedSaveRef.current?.cancel();
-    };
-  }, [saveContract]);
+  const debouncedSaveRef = useDebouncedSave(saveContract, 2000);
 
   const triggerDebouncedSave = useCallback(() => {
     debouncedSaveRef.current?.();
@@ -314,15 +113,14 @@ export default function ContractPage({
     await saveContract();
   };
 
-  useEffect(() => {
-    if (isLoading) {
-      return;
-    }
-    triggerDebouncedSave();
-    return () => {
-      debouncedSaveRef.current?.cancel();
-    };
-  }, [title, content, fields, contractId, isLoading, triggerDebouncedSave]);
+  useAutoSaveContract({
+    isLoading,
+    triggerDebouncedSave,
+    debouncedSaveRef,
+    deps: [title, content, fields, contractId],
+  });
+
+  console.log(localSaveError);
 
   return (
     <div className="sm:pr-[300px] h-screen">
