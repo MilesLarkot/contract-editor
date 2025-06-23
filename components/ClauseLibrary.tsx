@@ -146,7 +146,7 @@ function ClauseLibrary() {
   }
 
   return (
-    <div className="space-y-4 p-2">
+    <div className="space-y-4 p-2 h-full overflow-auto">
       <form onSubmit={handleAddClause} className="space-y-2">
         <div className="flex">
           <input
@@ -172,65 +172,71 @@ function ClauseLibrary() {
       <div className="flex">
         <p className="font-semibold text-sm">All clauses</p>
       </div>
-      {clauses.length === 0 ? (
-        <p className="text-gray-500">No clauses available</p>
-      ) : (
-        clauses.map((clause) => (
-          <div key={clause._id} className="border p-2 rounded">
-            {editingClauseId === clause._id ? (
-              <form
-                onSubmit={(e) => handleEditClause(e, clause._id)}
-                className="space-y-2"
-              >
-                <input
-                  type="text"
-                  value={editClauseTitle}
-                  onChange={(e) => setEditClauseTitle(e.target.value)}
-                  placeholder="Clause Title"
-                  className="w-full px-2 border rounded"
-                />
-                <textarea
-                  value={editClauseContent}
-                  onChange={(e) => setEditClauseContent(e.target.value)}
-                  placeholder="Clause Content"
-                  className="w-full px-2 border rounded"
-                  rows={2}
-                />
-                <div className="flex space-x-2">
-                  <Button type="submit">Save</Button>
-                  <Button variant="outline" onClick={cancelEditing}>
-                    Cancel
-                  </Button>
+      <div className="overflow-y-auto space-y-1">
+        {clauses.length === 0 ? (
+          <p className="text-gray-500">No clauses available</p>
+        ) : (
+          clauses.map((clause) => (
+            <div key={clause._id} className="border px-2 py-1 rounded">
+              {editingClauseId === clause._id ? (
+                <form
+                  onSubmit={(e) => handleEditClause(e, clause._id)}
+                  className="space-y-2"
+                >
+                  <input
+                    type="text"
+                    value={editClauseTitle}
+                    onChange={(e) => setEditClauseTitle(e.target.value)}
+                    placeholder="Clause Title"
+                    className="w-full px-2 border rounded"
+                  />
+                  <textarea
+                    value={editClauseContent}
+                    onChange={(e) => setEditClauseContent(e.target.value)}
+                    placeholder="Clause Content"
+                    className="w-full px-2 border rounded"
+                    rows={2}
+                  />
+                  <div className="flex space-x-2">
+                    <Button type="submit">Save</Button>
+                    <Button variant="outline" onClick={cancelEditing}>
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              ) : (
+                <div
+                  className="flex justify-between items-center"
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, clause)}
+                >
+                  <span className="select-none cursor-move">
+                    {clause.title}
+                  </span>
+                  <div className="space-x-2 flex">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="size-8"
+                      onClick={() => startEditing(clause)}
+                    >
+                      <Pencil size="icon" />
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="size-8"
+                      onClick={() => handleDeleteClause(clause._id)}
+                    >
+                      <Trash size="icon" />
+                    </Button>
+                  </div>
                 </div>
-              </form>
-            ) : (
-              <div
-                className="flex justify-between items-center"
-                draggable
-                onDragStart={(e) => handleDragStart(e, clause)}
-              >
-                <span className="select-none cursor-move">{clause.title}</span>
-                <div className="space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => startEditing(clause)}
-                  >
-                    <Pencil size="icon" />
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteClause(clause._id)}
-                  >
-                    <Trash size="icon" />
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))
-      )}
+              )}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

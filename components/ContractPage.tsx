@@ -1,12 +1,10 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Inspector from "@/components/Inspector";
 import { useState, useCallback, useRef } from "react";
 import WYSIWYGEditor, { WYSIWYGEditorHandle } from "@/components/WYSIWYGEditor";
 import { useParams } from "next/navigation";
-import ExportButton from "./ExportButton";
 import InspectorButton from "./InspectorButton";
+import ContractHeader from "./ContractHeader";
 import { useDebouncedSave } from "@/hooks/useDebounceSave";
 import { useAutoSaveContract } from "@/hooks/useAutoSaveContract";
 import { useLoadContract } from "@/hooks/useLoadContract";
@@ -128,54 +126,30 @@ export default function ContractPage({
         toggle={() => setIsActive((prev) => !prev)}
         isActive={isActive}
       />
-      <div className="flex flex-1 flex-col gap-4 px-2 sm:px-10 bg-gray-100  pt-6">
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="bg-white p-4 drop-shadow-[5px_5px_0_rgba(0,0,0,0.10)] rounded space-y-4">
-            <div className="flex justify-between items-center">
-              <Button type="submit" disabled={isSaving || isLoading}>
-                {isSaving
-                  ? "Saving..."
-                  : isLoading
-                  ? "Loading..."
-                  : `Save ${isTemplate ? "Template" : "Contract"}`}
-              </Button>
-              <div className="mr-auto ml-2">
-                <ExportButton title={title} content={content} />
-              </div>
-              <div className="flex flex-col items-end">
-                {lastSaved && (
-                  <span className="text-sm text-gray-500">
-                    Last saved: {lastSaved}
-                  </span>
-                )}
-                {saveError && (
-                  <span className="text-sm text-red-500">{saveError}</span>
-                )}
-              </div>
-            </div>
-            <Input
-              id="title"
-              name="title"
-              placeholder={`Enter ${
-                isTemplate ? "template" : "contract"
-              } title`}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-          <div className="bg-white drop-shadow-[5px_5px_0_rgba(0,0,0,0.10)]">
-            <WYSIWYGEditor
-              ref={editorRef}
-              value={content}
-              onChange={setContent}
-              placeholder={`Enter ${
-                isTemplate ? "template" : "contract"
-              } content`}
-              onFieldDrop={(field) => addField({ id: fields.length, ...field })}
-              onFieldUpdate={updateField}
-            />
-          </div>
-        </form>
+      <div className="flex flex-1 flex-col gap-4 px-2 sm:px-10 bg-gray-100 pt-6">
+        <ContractHeader
+          title={title}
+          content={content}
+          isTemplate={isTemplate}
+          isSaving={isSaving}
+          isLoading={isLoading}
+          lastSaved={lastSaved}
+          saveError={saveError}
+          onTitleChange={setTitle}
+          onSubmit={handleSubmit}
+        />
+        <div className="bg-white drop-shadow-[5px_5px_0_rgba(0,0,0,0.10)]">
+          <WYSIWYGEditor
+            ref={editorRef}
+            value={content}
+            onChange={setContent}
+            placeholder={`Enter ${
+              isTemplate ? "template" : "contract"
+            } content`}
+            onFieldDrop={(field) => addField({ id: fields.length, ...field })}
+            onFieldUpdate={updateField}
+          />
+        </div>
       </div>
       <Inspector
         addField={addField}
