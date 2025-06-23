@@ -76,7 +76,6 @@ export default function ClientTemplatesList() {
         <TableRow>
           <TableHead className="w-[100px]">Title</TableHead>
           <TableHead>Last Updated</TableHead>
-          <TableHead>Content</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -91,7 +90,6 @@ export default function ClientTemplatesList() {
           >
             <TableCell>{template.title}</TableCell>
             <TableCell>{format(new Date(template.updatedAt), "PPP")}</TableCell>
-            <TableCell>{template.content}</TableCell>
             <TableCell>
               <Button
                 variant="destructive"

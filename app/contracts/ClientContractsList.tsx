@@ -77,7 +77,6 @@ export default function ClientContractList() {
         <TableRow>
           <TableHead className="w-[100px]">Title</TableHead>
           <TableHead>Last Updated</TableHead>
-          <TableHead>Content</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -92,7 +91,6 @@ export default function ClientContractList() {
           >
             <TableCell>{contract.title}</TableCell>
             <TableCell>{format(new Date(contract.updatedAt), "PPP")}</TableCell>
-            <TableCell>{contract.content}</TableCell>
             <TableCell>
               <Button
                 variant="destructive"
