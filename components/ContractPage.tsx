@@ -156,7 +156,6 @@ export default function ContractPage({
             <Input
               id="title"
               name="title"
-              required
               placeholder={`Enter ${
                 isTemplate ? "template" : "contract"
               } title`}
