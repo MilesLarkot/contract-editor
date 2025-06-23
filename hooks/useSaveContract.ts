@@ -42,6 +42,10 @@ export function useSaveContract({
       return;
     }
 
+    if (title === "") {
+      title = "Untitled Contract";
+    }
+
     try {
       const contractDataToSave = {
         title,
