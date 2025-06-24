@@ -201,15 +201,23 @@ function FieldPicker({
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="flex items-center gap-2 p-1 outline-none cursor-pointer hover:bg-blue-50 rounded hover:text-blue-600"
-                    onClick={() =>
+                    onClick={() => {
+                      let newName = field.fieldName + "*";
+                      const existingNames = new Set(
+                        fields.map((f) => f.fieldName)
+                      );
+                      while (existingNames.has(newName)) {
+                        newName += "*";
+                      }
                       setFields((prev) => [
                         ...prev,
                         {
                           ...field,
                           id: Date.now(),
+                          fieldName: newName,
                         },
-                      ])
-                    }
+                      ]);
+                    }}
                   >
                     <Copy size={16} />
                     Duplicate field
