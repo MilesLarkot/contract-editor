@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Delete, Loader2 } from "lucide-react";
+import { Delete, Loader2, Pencil } from "lucide-react";
 import {
   Table,
   TableCaption,
@@ -101,6 +101,16 @@ export default function ClientTemplatesList() {
                 }}
               >
                 <Delete />
+              </Button>
+              <Button
+                size="icon"
+                className="size-8 ml-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("use this row data to make a new contract");
+                }}
+              >
+                <Pencil />
               </Button>
             </TableCell>
           </TableRow>
