@@ -121,12 +121,12 @@ export default function ContractPage({
   console.log(localSaveError);
 
   return (
-    <div className="sm:pr-[300px] h-screen">
+    <div className="sm:pr-[300px] h-screen min-h-fit">
       <InspectorButton
         toggle={() => setIsActive((prev) => !prev)}
         isActive={isActive}
       />
-      <div className="flex flex-1 flex-col gap-4 px-2 sm:px-10 bg-gray-100 pt-6">
+      <div className="flex flex-1 flex-col gap-4 px-2 sm:px-10 bg-gray-100 pt-6 min-h-fit">
         <ContractHeader
           title={title}
           content={content}
@@ -138,7 +138,7 @@ export default function ContractPage({
           onTitleChange={setTitle}
           onSubmit={handleSubmit}
         />
-        <div className="bg-white drop-shadow-[5px_5px_0_rgba(0,0,0,0.10)]">
+        <div className="bg-white drop-shadow-[5px_5px_0_rgba(0,0,0,0.10)] min-h-fit">
           <WYSIWYGEditor
             ref={editorRef}
             value={content}

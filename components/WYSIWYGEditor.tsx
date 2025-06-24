@@ -573,7 +573,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
             return (
               <blockquote
                 {...attributes}
-                className="border-l-4 border-gray-300 pl-4 italic my-4"
+                className="border-l-4 border-gray-300 pl-4 italic my-4 min-h-fit"
                 style={style}
               >
                 {children}
@@ -764,8 +764,8 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
     };
 
     return (
-      <div className="border rounded">
-        <div className="border-b bg-gray-50 p-3">
+      <div className="border rounded min-h-fit">
+        <div className="border-b bg-gray-50 p-3 min-h-fit">
           <div className="flex flex-wrap items-center gap-2">
             <Select
               value={
@@ -1065,7 +1065,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
         <div
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          className="h-[600px] mb-12 p-4"
+          className="min-h-[600px] mb-12 p-4"
         >
           <Slate
             editor={editor}

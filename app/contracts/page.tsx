@@ -11,6 +11,13 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
+import { DropdownMenu, DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 export default function Page() {
   return (
     <div>
@@ -26,11 +33,29 @@ export default function Page() {
               <BreadcrumbPage>Contracts</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
-          <Link href="/contracts/new" className="ml-auto">
-            <Button variant="default">
-              <CirclePlus /> New Contract
-            </Button>
-          </Link>
+          <div className="ml-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="default">
+                  <CirclePlus /> New Contract
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="start">
+                <DropdownMenuGroup>
+                  <Link href="/contracts/new">
+                    <DropdownMenuItem className="cursor-pointer">
+                      From Scratch
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link href="/templates">
+                    <DropdownMenuItem className="cursor-pointer">
+                      From Template
+                    </DropdownMenuItem>
+                  </Link>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </Breadcrumb>
       </header>
       <div className="p-4">
