@@ -21,7 +21,7 @@ function page() {
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/contracts">Templates</BreadcrumbLink>
+              <BreadcrumbLink href="/templates">Templates</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>

@@ -10,7 +10,7 @@ export async function GET(
   { params }: { params: Params }
 ) {
   const template = await Template.findById(params.id)
-    .select("title content fields")
+    .select("title content defaultFields")
     .lean();
   if (!template)
     return NextResponse.json({ error: "Template Not found" }, { status: 404 });

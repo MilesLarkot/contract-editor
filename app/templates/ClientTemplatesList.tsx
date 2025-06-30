@@ -22,7 +22,7 @@ interface Template {
   title: string;
   content: string;
   updatedAt: string;
-  fields?: Record<string, string>;
+  defaultFields?: Record<string, string>;
 }
 
 export default function ClientTemplatesList() {
@@ -63,7 +63,7 @@ export default function ClientTemplatesList() {
       _id: template._id,
       title: template.title,
       content: template.content,
-      defaultFields: new Map(Object.entries(template.fields || {})),
+      defaultFields: new Map(Object.entries(template.defaultFields || {})),
       metadata: { category: undefined },
     });
 

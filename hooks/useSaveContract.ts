@@ -42,20 +42,19 @@ export function useSaveContract({
       return;
     }
 
-    if (title === "") {
-      title = "Untitled Contract";
-    }
-
     try {
       const contractDataToSave = {
-        title,
-        content,
-        fields: fields.reduce((acc, field) => {
-          if (field.fieldName) {
-            acc[field.fieldName] = field.fieldValue;
-          }
-          return acc;
-        }, {} as Record<string, string>),
+        title: title || "Untitled Template",
+        content: content || "",
+        [isTemplate ? "defaultFields" : "fields"]: fields.reduce(
+          (acc, field) => {
+            if (field.fieldName) {
+              acc[field.fieldName] = field.fieldValue;
+            }
+            return acc;
+          },
+          {} as Record<string, string>
+        ),
       };
 
       setIsSaving(true);

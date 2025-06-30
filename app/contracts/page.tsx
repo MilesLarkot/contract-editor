@@ -57,7 +57,7 @@ export default function Page() {
           </div>
         </Breadcrumb>
       </header>
-      <div className="p-4">
+      <div className="p-4  bg-gray-100">
         <ClientContractList />
       </div>
     </div>

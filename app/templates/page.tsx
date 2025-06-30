@@ -33,7 +33,7 @@ export default function Page() {
           </Link>
         </Breadcrumb>
       </header>
-      <div className="p-4">
+      <div className="p-4 bg-gray-100">
         <ClientTemplatesList />
       </div>
     </div>

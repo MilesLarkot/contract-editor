@@ -15,6 +15,7 @@ import { updateContentJson } from "@/hooks/updateContentJson";
 import { useSaveContract } from "@/hooks/useSaveContract";
 
 interface ContractData {
+  defaultFields?: Record<string, string>;
   id?: string;
   title?: string;
   content?: string;
@@ -35,7 +36,15 @@ export default function ContractPage({
   const [fields, setFields] = useState<
     { id: number; fieldName: string; fieldValue: string }[]
   >(
-    contractData?.fields
+    isTemplate && contractData?.defaultFields
+      ? Object.entries(contractData.defaultFields).map(
+          ([fieldName, fieldValue], index) => ({
+            id: index,
+            fieldName,
+            fieldValue,
+          })
+        )
+      : contractData?.fields
       ? Object.entries(contractData.fields).map(
           ([fieldName, fieldValue], index) => ({
             id: index,

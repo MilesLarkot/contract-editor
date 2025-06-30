@@ -28,6 +28,7 @@ export function useContractData({
     }
 
     try {
+      setIsLoading(true);
       const response = await fetch(
         `/api/${isTemplate ? "templates" : "contracts"}/${id}`,
         {
@@ -45,12 +46,20 @@ export function useContractData({
         setTitle(data.title || "");
         setContent(data.content || "");
         setFields(
-          data.fields
+          isTemplate && data.defaultFields
+            ? Object.entries(data.defaultFields).map(
+                ([fieldName, fieldValue], index) => ({
+                  id: index,
+                  fieldName,
+                  fieldValue: fieldValue || "",
+                })
+              )
+            : data.fields
             ? Object.entries(data.fields).map(
                 ([fieldName, fieldValue], index) => ({
                   id: index,
                   fieldName,
-                  fieldValue,
+                  fieldValue: fieldValue || "",
                 })
               )
             : []
@@ -75,7 +84,16 @@ export function useContractData({
     } finally {
       setIsLoading(false);
     }
-  }, [id, isTemplate]);
+  }, [
+    id,
+    isTemplate,
+    setTitle,
+    setContent,
+    setFields,
+    setContractId,
+    setIsLoading,
+    setSaveError,
+  ]);
 
   return { fetchContractData };
 }
