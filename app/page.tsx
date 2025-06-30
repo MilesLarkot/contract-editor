@@ -1,3 +1,4 @@
+import InternalServerError from "@/components/InternalServerError";
 import {
   Breadcrumb,
   BreadcrumbList,
