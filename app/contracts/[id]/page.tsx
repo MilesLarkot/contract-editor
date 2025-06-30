@@ -9,13 +9,9 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
+import Contract from "@/models/contract";
 
 export const dynamic = "force-dynamic";
-
-const baseUrl =
-  process.env.VERCEL_URL !== undefined
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
 
 interface ContractData {
   id: string;
@@ -26,29 +22,10 @@ interface ContractData {
 
 async function fetchContract(id: string): Promise<ContractData | null> {
   try {
-    const response = await fetch(`${baseUrl}/api/contracts/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-      },
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error(`Failed to fetch contract: ${response.statusText}`);
-    }
-
-    const contract = await response.json();
-    return {
-      id: contract._id || contract.id,
-      title: contract.title,
-      content: contract.content,
-      fields: contract.fields,
-    };
+    const contract = await Contract.findById(id)
+      .select("title content fields")
+      .lean();
+    return contract as ContractData | null;
   } catch (err) {
     console.error("Error fetching contract:", err);
     return null;
