@@ -15,7 +15,6 @@ import { DropdownMenu, DropdownMenuGroup } from "@radix-ui/react-dropdown-menu";
 import {
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 export default function Page() {

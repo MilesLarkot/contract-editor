@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Delete, Loader2, Pencil } from "lucide-react";
@@ -14,6 +15,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { useConvertTemplateToContract } from "@/hooks/useConvertTemplateToContract";
 
 interface Template {
   _id: string;
@@ -24,9 +26,11 @@ interface Template {
 }
 
 export default function ClientTemplatesList() {
-  const [templates, setTemplates] = useState([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const router = useRouter();
+  const { convertTemplateToContract } = useConvertTemplateToContract();
 
   useEffect(() => {
     fetch("/api/templates")
@@ -51,6 +55,39 @@ export default function ClientTemplatesList() {
       setTemplates((prev) => prev.filter((t: Template) => t._id !== id));
     } else {
       alert("Failed to delete template");
+    }
+  };
+
+  const createContractFromTemplate = async (template: Template) => {
+    const contractData = convertTemplateToContract({
+      _id: template._id,
+      title: template.title,
+      content: template.content,
+      defaultFields: new Map(Object.entries(template.fields || {})),
+      metadata: { category: undefined },
+    });
+
+    try {
+      const res = await fetch("/api/contracts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: contractData.title,
+          content: contractData.content,
+          fields: Object.fromEntries(contractData.fields),
+          templateId: contractData.templateId,
+          metadata: contractData.metadata,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to create contract");
+
+      const { id } = await res.json();
+      // Redirect to the new contract's edit page
+      router.push(`/contracts/${id}`);
+    } catch (err) {
+      alert("Failed to create contract from template");
+      console.error(err);
     }
   };
 
@@ -107,7 +144,7 @@ export default function ClientTemplatesList() {
                 className="size-8 ml-2"
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("use this row data to make a new contract");
+                  createContractFromTemplate(template);
                 }}
               >
                 <Pencil />
