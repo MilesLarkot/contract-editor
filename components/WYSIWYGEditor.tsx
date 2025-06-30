@@ -363,7 +363,7 @@ const ColorPicker = ({
             className="w-4 h-4 rounded border border-gray-300"
             style={{ backgroundColor: value || "#000000" }}
           />
-          <span className="text-xs">▼</span>
+          <span className="text-xs">{title} ▼</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48 p-2 grid grid-cols-10 gap-1">
@@ -929,13 +929,13 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
             <ColorPicker
               value={getMarkValue(editor, "color") as string}
               onChange={(color) => setMark(editor, "color", color)}
-              title="Text Color"
+              title="Text"
             />
 
             <ColorPicker
               value={getMarkValue(editor, "backgroundColor") as string}
               onChange={(color) => setMark(editor, "backgroundColor", color)}
-              title="Background Color"
+              title="Background"
             />
 
             <Separator orientation="vertical" className="h-6 mx-1" />
