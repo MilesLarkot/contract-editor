@@ -25,6 +25,7 @@ async function fetchContract(id: string): Promise<ContractData | null> {
     const contract = await Contract.findById(id)
       .select("title content fields")
       .lean();
+    console.log("Fetched contract:", contract);
     return contract as ContractData | null;
   } catch (err) {
     console.error("Error fetching contract:", err);
