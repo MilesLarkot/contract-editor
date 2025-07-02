@@ -10,6 +10,7 @@ import {
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
 import Contract from "@/models/contract";
+import connectDB from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ interface ContractData {
 }
 
 async function fetchContract(id: string): Promise<ContractData | null> {
+  await connectDB();
   try {
     const contract = await Contract.findById(id)
       .select("title content fields")
