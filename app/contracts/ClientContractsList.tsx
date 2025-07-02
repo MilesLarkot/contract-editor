@@ -14,6 +14,7 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { useRouter } from "next/navigation";
 
 interface Contract {
   _id: string;
@@ -27,6 +28,7 @@ export default function ClientContractList() {
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/api/contracts")
@@ -85,9 +87,7 @@ export default function ClientContractList() {
           <TableRow
             key={contract._id}
             className="cursor-pointer"
-            onClick={() =>
-              (window.location.href = `/contracts/${contract._id}`)
-            }
+            onClick={() => router.push(`/contracts/${contract._id}`)}
           >
             <TableCell>{contract.title}</TableCell>
             <TableCell>{format(new Date(contract.updatedAt), "PPP")}</TableCell>
