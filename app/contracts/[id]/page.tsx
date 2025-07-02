@@ -40,7 +40,8 @@ export default async function ContractEditPage({
 }) {
   const contractData = await fetchContract(params.id);
   if (!contractData) {
-    notFound();
+    // notFound();
+    console.error("Contract not found for ID:", params.id);
   }
 
   return (
