@@ -59,12 +59,18 @@ export default async function ContractEditPage({
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>{contractData.title}</BreadcrumbPage>
+              <BreadcrumbPage>
+                {contractData ? contractData.title : "Contract Not Found"}
+              </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </header>
-      <ContractPage contractData={contractData} />
+      {contractData ? (
+        <ContractPage contractData={contractData} />
+      ) : (
+        <div className="p-4 text-red-500">Contract not found.</div>
+      )}
     </div>
   );
 }
