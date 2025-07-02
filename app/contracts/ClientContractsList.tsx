@@ -77,7 +77,7 @@ export default function ClientContractList() {
       <TableCaption>A list of your contracts.</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[100px]">Title</TableHead>
+          <TableHead className="w-fit">Title</TableHead>
           <TableHead>Last Updated</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
