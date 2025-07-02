@@ -8,7 +8,7 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
-import { notFound } from "next/navigation";
+// import { notFound } from "next/navigation";
 import Contract from "@/models/contract";
 
 export const dynamic = "force-dynamic";
