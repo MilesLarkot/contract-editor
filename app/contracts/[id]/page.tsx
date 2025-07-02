@@ -8,7 +8,7 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
-// import { notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Contract from "@/models/contract";
 
 export const dynamic = "force-dynamic";
@@ -40,8 +40,7 @@ export default async function ContractEditPage({
 }) {
   const contractData = await fetchContract(params.id);
   if (!contractData) {
-    // notFound();
-    console.error("Contract not found for ID:", params.id);
+    notFound();
   }
 
   return (
@@ -59,18 +58,12 @@ export default async function ContractEditPage({
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>
-                {contractData ? contractData.title : "Contract Not Found"}
-              </BreadcrumbPage>
+              <BreadcrumbPage>{contractData.title}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </header>
-      {contractData ? (
-        <ContractPage contractData={contractData} />
-      ) : (
-        <div className="p-4 text-red-500">Contract not found.</div>
-      )}
+      <ContractPage contractData={contractData} />
     </div>
   );
 }
