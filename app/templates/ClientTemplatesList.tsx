@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Delete, Loader2, Pencil } from "lucide-react";
+import { Delete, Loader2, NotebookPen } from "lucide-react";
 import {
   Table,
   TableCaption,
@@ -83,7 +83,6 @@ export default function ClientTemplatesList() {
       if (!res.ok) throw new Error("Failed to create contract");
 
       const { id } = await res.json();
-      // Redirect to the new contract's edit page
       router.push(`/contracts/${id}`);
     } catch (err) {
       alert("Failed to create contract from template");
@@ -111,7 +110,7 @@ export default function ClientTemplatesList() {
       <TableCaption>A list of your templates.</TableCaption>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[100px]">Title</TableHead>
+          <TableHead className="w-fit">Title</TableHead>
           <TableHead>Last Updated</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
@@ -147,7 +146,7 @@ export default function ClientTemplatesList() {
                   createContractFromTemplate(template);
                 }}
               >
-                <Pencil />
+                <NotebookPen />
               </Button>
             </TableCell>
           </TableRow>

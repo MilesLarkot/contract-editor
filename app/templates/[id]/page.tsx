@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
+import connectDB from "@/lib/db";
 
 const baseUrl =
   process.env.VERCEL_URL !== undefined
@@ -24,6 +25,7 @@ interface ContractData {
 
 async function fetchContract(id: string): Promise<ContractData | null> {
   try {
+    await connectDB();
     const response = await fetch(`${baseUrl}/api/templates/${id}`, {
       method: "GET",
       headers: {
