@@ -763,9 +763,10 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
       }
     };
 
+    
     return (
-      <div className="border rounded min-h-fit">
-        <div className="border-b bg-gray-50 p-3 min-h-fit">
+      <div>
+<div className="border-b bg-gray-50 p-3 min-h-fit sticky top-20 z-10 max-h-[100px] overflow-scroll">
           <div className="flex flex-wrap items-center gap-2">
             <Select
               value={
@@ -1061,6 +1062,8 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
             </Button>
           </div>
         </div>
+      <div className="border rounded min-h-fit">
+        
 
         <div
           onDragOver={handleDragOver}
@@ -1074,16 +1077,17 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
               setInternalValue(newVal);
               onChange(JSON.stringify(newVal));
             }}
-          >
+            >
             <Editable
               renderElement={renderElement}
               renderLeaf={renderLeaf}
               placeholder={placeholder}
               className="h-full outline-none"
-            />
+              />
           </Slate>
         </div>
       </div>
+              </div>
     );
   }
 );
