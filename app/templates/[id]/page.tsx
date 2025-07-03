@@ -10,44 +10,30 @@ import {
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
 import connectDB from "@/lib/db";
+import Template from "@/models/template";
 
-const baseUrl =
-  process.env.VERCEL_URL !== undefined
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
+export const dynamic = "force-dynamic";
 
-interface ContractData {
+interface TemplateData {
   id: string;
   title: string;
   content: string;
   fields: Record<string, string>;
 }
 
-async function fetchContract(id: string): Promise<ContractData | null> {
+async function fetchTemplate(id: string): Promise<TemplateData | null> {
+  await connectDB();
   try {
-    await connectDB();
-    const response = await fetch(`${baseUrl}/api/templates/${id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-      },
-      cache: "no-store",
-    });
+    const template = await Template.findById(id)
+      .select("title content fields")
+      .lean();
+    if (!template) return null;
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        return null;
-      }
-      throw new Error(`Failed to fetch template: ${response.statusText}`);
-    }
-
-    const contract = await response.json();
     return {
-      id: contract._id || contract.id,
-      title: contract.title,
-      content: contract.content,
-      fields: contract.fields,
+      id: template._id.toString(),
+      title: template.title,
+      content: template.content,
+      fields: template.defaultFields,
     };
   } catch (err) {
     console.error("Error fetching template:", err);
@@ -55,14 +41,14 @@ async function fetchContract(id: string): Promise<ContractData | null> {
   }
 }
 
-export default async function ContractEditPage({
+export default async function TemplateEditPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const contractData = await fetchContract(params.id);
-  if (!contractData) {
-    notFound();
+  const templateData = await fetchTemplate(params.id);
+  if (!templateData) {
+    return notFound(); // ← RETURN THIS
   }
 
   return (
@@ -80,12 +66,12 @@ export default async function ContractEditPage({
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>{contractData.title}</BreadcrumbPage>
+              <BreadcrumbPage>{templateData.title}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </header>
-      <ContractPage contractData={contractData} isTemplate={true} />
+      <ContractPage contractData={templateData} isTemplate={true} />
     </div>
   );
 }
