@@ -36,7 +36,7 @@ export default function ContractHeader({
               ? "Loading..."
               : `Save ${isTemplate ? "Template" : "Contract"}`}
           </Button>
-          <div className="mr-auto ml-2">
+          <div className="mr-auto ml-2 flex space-x-2">
             <ExportButton title={title} content={content} />
           </div>
           <div className="flex flex-col items-end">

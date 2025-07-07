@@ -13,6 +13,9 @@ import { updateFieldsState } from "@/hooks/updateFieldState";
 import { syncEditorField } from "@/hooks/syncEditorField";
 import { updateContentJson } from "@/hooks/updateContentJson";
 import { useSaveContract } from "@/hooks/useSaveContract";
+import { Label } from "./ui/label";
+import { Switch } from "./ui/switch";
+import PreviewPDF from "./PreviewPDF";
 
 interface ContractData {
   defaultFields?: Record<string, string>;
@@ -129,8 +132,15 @@ export default function ContractPage({
 
   console.log(localSaveError);
 
+  const [previewPDF, setPreviewPDF] = useState(false);
+
   return (
-    <div className="sm:pr-[300px] h-screen min-h-fit">
+    <div
+      className="sm:pr-[300px] h-screen min-h-fit"
+      // className={`${
+      //   previewPDF ? "sm:pr-0" : "sm:pr-[300px]"
+      // } h-screen min-h-fit`}
+    >
       <InspectorButton
         toggle={() => setIsActive((prev) => !prev)}
         isActive={isActive}
@@ -147,19 +157,32 @@ export default function ContractPage({
           onTitleChange={setTitle}
           onSubmit={handleSubmit}
         />
-        <div className="bg-white drop-shadow-[5px_5px_0_rgba(0,0,0,0.10)] min-h-fit">
-          <WYSIWYGEditor
-            ref={editorRef}
-            value={content}
-            onChange={setContent}
-            placeholder={`Enter ${
-              isTemplate ? "template" : "contract"
-            } content`}
-            onFieldDrop={(field) => addField({ id: fields.length, ...field })}
-            onFieldUpdate={updateField}
+        <div className="space-x-2 ml-auto">
+          <Label htmlFor="preview-mode">Preview Mode</Label>
+          <Switch
+            id="preview-mode"
+            checked={previewPDF}
+            onCheckedChange={setPreviewPDF}
           />
         </div>
+        {previewPDF ? (
+          <PreviewPDF title={title} content={content} />
+        ) : (
+          <div className="bg-white drop-shadow-[5px_5px_0_rgba(0,0,0,0.10)] min-h-fit">
+            <WYSIWYGEditor
+              ref={editorRef}
+              value={content}
+              onChange={setContent}
+              placeholder={`Enter ${
+                isTemplate ? "template" : "contract"
+              } content`}
+              onFieldDrop={(field) => addField({ id: fields.length, ...field })}
+              onFieldUpdate={updateField}
+            />
+          </div>
+        )}
       </div>
+      {/* {previewPDF ? null : ( */}
       <Inspector
         addField={addField}
         updateField={updateField}
@@ -167,6 +190,7 @@ export default function ContractPage({
         isActive={isActive}
         isTemplate={isTemplate}
       />
+      {/* )} */}
     </div>
   );
 }
