@@ -92,7 +92,7 @@ const nodeToHtml = (node: SlateNode | string): string => {
 
     case "field":
       const fieldValue = node.fieldValue || node.fieldName || "";
-      return fieldValue;
+      return `<strong>${fieldValue}</strong>`;
 
     default:
       return `<div${alignStyle}>${children}</div>`;
