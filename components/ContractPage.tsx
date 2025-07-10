@@ -18,11 +18,11 @@ import { Switch } from "./ui/switch";
 import PreviewPDF from "./PreviewPDF";
 
 interface ContractData {
-  defaultFields?: Record<string, string>;
   id?: string;
   title?: string;
   content?: string;
   fields?: Record<string, string>;
+  defaultFields?: Record<string, string>;
 }
 
 interface ContractPageProps {

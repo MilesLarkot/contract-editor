@@ -1,4 +1,10 @@
 import { useCallback, useRef, useState } from "react";
+import {
+  createContract,
+  updateContract,
+  createTemplate,
+  updateTemplate,
+} from "@/lib/api";
 
 interface ContractData {
   title: string;
@@ -60,45 +66,50 @@ export function useSaveContract({
       setIsSaving(true);
       setSaveError(null);
 
-      const method = contractId ? "PATCH" : "POST";
-      const url = contractId
-        ? `/api/${isTemplate ? "templates" : "contracts"}/${contractId}`
-        : `/api/${isTemplate ? "templates" : "contracts"}`;
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(contractDataToSave),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (!contractId && (result._id || result.id)) {
-          const newId = result._id || result.id;
-          setContractId(newId);
-          window.history.replaceState(
-            null,
-            "",
-            `/${isTemplate ? "templates" : "contracts"}/${newId}`
-          );
-        }
-        setLastSaved(new Date().toLocaleTimeString());
+      let result;
+      if (contractId) {
+        console.log(
+          `Updating ${
+            isTemplate ? "template" : "contract"
+          } with ID: ${contractId}`,
+          contractDataToSave
+        );
+        result = isTemplate
+          ? await updateTemplate(contractId, contractDataToSave)
+          : await updateContract(contractId, contractDataToSave);
       } else {
-        const errorText = await response.text();
-        console.error("Save failed:", response.status, errorText);
-        setSaveError(`Save failed: ${response.status} ${errorText}`);
+        console.log(
+          `Creating new ${isTemplate ? "template" : "contract"}`,
+          contractDataToSave
+        );
+        result = isTemplate
+          ? await createTemplate(contractDataToSave)
+          : await createContract(contractDataToSave);
       }
-    } catch (err) {
+
+      if (!contractId && result.id) {
+        const newId = result.id;
+        setContractId(newId);
+        window.history.replaceState(
+          null,
+          "",
+          `/${isTemplate ? "templates" : "contracts"}/${newId}`
+        );
+      }
+      setLastSaved(new Date().toLocaleTimeString());
+    } catch (error: any) {
       console.error(
         `Error saving ${isTemplate ? "template" : "contract"}:`,
-        err
+        error.response?.data || error.message
       );
       setSaveError(
-        `Error saving ${isTemplate ? "template" : "contract"}: ${
-          err instanceof Error ? err.message : "Unknown error"
-        }`
+        error.response?.status === 403
+          ? `Permission denied: Unable to save ${
+              isTemplate ? "template" : "contract"
+            }`
+          : `Error saving ${isTemplate ? "template" : "contract"}: ${
+              error.message || "Unknown error"
+            }`
       );
     } finally {
       setIsSaving(false);

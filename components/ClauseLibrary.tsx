@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Pencil, SquarePlus, Trash } from "lucide-react";
+import {
+  getClauses,
+  createClause,
+  updateClause,
+  deleteClause,
+} from "@/lib/api";
 
 interface Clause {
-  _id: string;
+  id: string;
   title: string;
   content: string;
 }
@@ -21,11 +27,15 @@ function ClauseLibrary() {
   useEffect(() => {
     async function fetchClauses() {
       try {
-        const response = await fetch("/api/clauses");
-        const data = await response.json();
+        const data = await getClauses();
+        console.log("Fetched clauses:", data);
         setClauses(data);
-      } catch (error) {
-        console.error("Failed to fetch clauses:", error);
+      } catch (error: any) {
+        console.error(
+          "Failed to fetch clauses:",
+          error.response?.data || error.message
+        );
+        setError("Failed to load clauses");
       } finally {
         setIsLoading(false);
       }
@@ -38,7 +48,7 @@ function ClauseLibrary() {
     clause: Clause
   ) => {
     e.dataTransfer.setData("text/plain", clause.content);
-    e.dataTransfer.setData("application/clause-id", clause._id);
+    e.dataTransfer.setData("application/clause-id", clause.id);
   };
 
   const handleAddClause = async (e: React.FormEvent) => {
@@ -47,89 +57,100 @@ function ClauseLibrary() {
       setError("Title and content are required");
       return;
     }
-
     try {
-      const response = await fetch("/api/clauses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newClauseTitle,
-          content: newClauseContent,
-          metadata: {},
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create clause");
-      }
-
-      const newClause = await response.json();
-      setClauses([...clauses, newClause]);
+      const payload = {
+        title: newClauseTitle,
+        content: newClauseContent,
+      };
+      console.log("Creating clause with payload:", payload);
+      await createClause(payload);
+      const updatedClauses = await getClauses();
+      setClauses(updatedClauses);
       setNewClauseTitle("");
       setNewClauseContent("");
       setError(null);
-    } catch (error) {
-      console.error("Error creating clause:", error);
-      setError("Failed to create clause");
+    } catch (error: any) {
+      console.error(
+        "Error creating clause:",
+        error.response?.data || error.message
+      );
+      setError(
+        error.response?.status === 403
+          ? "Permission denied: Unable to create clause"
+          : "Failed to create clause"
+      );
     }
   };
 
   const handleEditClause = async (e: React.FormEvent, clauseId: string) => {
     e.preventDefault();
+    if (!clauseId) {
+      console.error("Clause ID is undefined");
+      setError("Invalid clause ID");
+      return;
+    }
     if (!editClauseTitle.trim() || !editClauseContent.trim()) {
       setError("Title and content are required");
       return;
     }
-
     try {
-      const response = await fetch(`/api/clauses/${clauseId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: editClauseTitle,
-          content: editClauseContent,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update clause");
-      }
-
-      const updatedClause = await response.json();
-      setClauses(
-        clauses.map((clause) =>
-          clause._id === clauseId ? updatedClause : clause
-        )
-      );
+      const payload = {
+        title: editClauseTitle,
+        content: editClauseContent,
+      };
+      console.log("Updating clause with ID:", clauseId, "Payload:", payload);
+      await updateClause(clauseId, payload);
+      const updatedClauses = await getClauses();
+      setClauses(updatedClauses);
       setEditingClauseId(null);
       setEditClauseTitle("");
       setEditClauseContent("");
       setError(null);
-    } catch (error) {
-      console.error("Error updating clause:", error);
-      setError("Failed to update clause");
+    } catch (error: any) {
+      console.error(
+        "Error updating clause:",
+        error.response?.data || error.message
+      );
+      setError(
+        error.response?.status === 403
+          ? "Permission denied: Unable to update clause"
+          : "Failed to update clause"
+      );
     }
   };
 
   const handleDeleteClause = async (clauseId: string) => {
+    if (!clauseId) {
+      console.error("Clause ID is undefined");
+      setError("Invalid clause ID");
+      return;
+    }
     try {
-      const response = await fetch(`/api/clauses/${clauseId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete clause");
-      }
-
-      setClauses(clauses.filter((clause) => clause._id !== clauseId));
-    } catch (error) {
-      console.error("Error deleting clause:", error);
-      setError("Failed to delete clause");
+      console.log("Deleting clause with ID:", clauseId);
+      await deleteClause(clauseId);
+      const updatedClauses = await getClauses();
+      setClauses(updatedClauses);
+      setError(null);
+    } catch (error: any) {
+      console.error(
+        "Error deleting clause:",
+        error.response?.data || error.message
+      );
+      setError(
+        error.response?.status === 403
+          ? "Permission denied: Unable to delete clause"
+          : "Failed to delete clause"
+      );
     }
   };
 
   const startEditing = (clause: Clause) => {
-    setEditingClauseId(clause._id);
+    if (!clause.id) {
+      console.error("Clause has no ID:", clause);
+      setError("Cannot edit clause without ID");
+      return;
+    }
+    setEditingClauseId(clause.id);
     setEditClauseTitle(clause.title);
     setEditClauseContent(clause.content);
   };
@@ -177,10 +198,10 @@ function ClauseLibrary() {
           <p className="text-gray-500">No clauses available</p>
         ) : (
           clauses.map((clause) => (
-            <div key={clause._id} className="border px-2 py-1 rounded">
-              {editingClauseId === clause._id ? (
+            <div key={clause.id} className="border px-2 py-1 rounded">
+              {editingClauseId === clause.id ? (
                 <form
-                  onSubmit={(e) => handleEditClause(e, clause._id)}
+                  onSubmit={(e) => handleEditClause(e, clause.id)}
                   className="space-y-2"
                 >
                   <input
@@ -226,7 +247,7 @@ function ClauseLibrary() {
                       variant="destructive"
                       size="icon"
                       className="size-8"
-                      onClick={() => handleDeleteClause(clause._id)}
+                      onClick={() => handleDeleteClause(clause.id)}
                     >
                       <Trash size="icon" />
                     </Button>

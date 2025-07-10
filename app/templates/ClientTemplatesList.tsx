@@ -15,13 +15,14 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
+import { getTemplates, deleteTemplate, createContract } from "@/lib/api";
 import { useConvertTemplateToContract } from "@/hooks/useConvertTemplateToContract";
 
 interface Template {
-  _id: string;
+  id: string;
   title: string;
   content: string;
-  updatedAt: string;
+  updatedAt?: string | null;
   defaultFields?: Record<string, string>;
 }
 
@@ -33,34 +34,56 @@ export default function ClientTemplatesList() {
   const { convertTemplateToContract } = useConvertTemplateToContract();
 
   useEffect(() => {
-    fetch("/api/templates")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch templates");
-        return res.json();
-      })
-      .then((data) => setTemplates(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    async function fetchTemplates() {
+      try {
+        const data = await getTemplates();
+        console.log("Fetched templates:", data);
+        const validTemplates = data.filter(
+          (template: Template) => template.id && typeof template.id === "string"
+        );
+        if (validTemplates.length < data.length) {
+          console.warn(
+            "Some templates were filtered out due to missing or invalid id:",
+            data
+          );
+        }
+        setTemplates(validTemplates);
+      } catch (error: any) {
+        console.error(
+          "Failed to fetch templates:",
+          error.response?.data || error.message
+        );
+        setError("Failed to load templates");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTemplates();
   }, []);
 
-  const deleteTemplate = async (id: string) => {
+  const deleteTemplateHandler = async (id: string) => {
     const confirm = window.confirm("Sure you wanna delete this template?");
     if (!confirm) return;
 
-    const res = await fetch(`/api/templates/${id}`, {
-      method: "DELETE",
-    });
-
-    if (res.ok) {
-      setTemplates((prev) => prev.filter((t: Template) => t._id !== id));
-    } else {
-      alert("Failed to delete template");
+    try {
+      await deleteTemplate(id);
+      setTemplates((prev) => prev.filter((t: Template) => t.id !== id));
+    } catch (error: any) {
+      console.error(
+        "Error deleting template:",
+        error.response?.data || error.message
+      );
+      alert(
+        error.response?.status === 403
+          ? "Permission denied: Unable to delete template"
+          : "Failed to delete template"
+      );
     }
   };
 
   const createContractFromTemplate = async (template: Template) => {
     const contractData = convertTemplateToContract({
-      _id: template._id,
+      id: template.id,
       title: template.title,
       content: template.content,
       defaultFields: new Map(Object.entries(template.defaultFields || {})),
@@ -68,36 +91,37 @@ export default function ClientTemplatesList() {
     });
 
     try {
-      const res = await fetch("/api/contracts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: contractData.title,
-          content: contractData.content,
-          fields: Object.fromEntries(contractData.fields),
-          templateId: contractData.templateId,
-          metadata: contractData.metadata,
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to create contract");
-
-      const { id } = await res.json();
+      const payload = {
+        title: contractData.title,
+        content: contractData.content,
+        fields: Object.fromEntries(contractData.fields),
+        templateId: contractData.templateId,
+        metadata: contractData.metadata,
+      };
+      console.log("Creating contract with payload:", payload);
+      const { id } = await createContract(payload);
       router.push(`/contracts/${id}`);
-    } catch (err) {
-      alert("Failed to create contract from template");
-      console.error(err);
+    } catch (error: any) {
+      console.error(
+        "Error creating contract:",
+        error.response?.data || error.message
+      );
+      alert(
+        error.response?.status === 403
+          ? "Permission denied: Unable to create contract"
+          : "Failed to create contract from template"
+      );
     }
   };
 
   if (loading) return <Loader2 className="animate-spin m-auto" />;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (error) return <p className="text-destruction">{error}</p>;
 
   if (templates.length === 0) {
     return (
       <p className="text-center text-muted-foreground">
         No templates found.{" "}
-        <Link href="/templates/new" className="text-blue-500 underline">
+        <Link href="/templates/new" className="text-info underline">
           Create one
         </Link>
         .
@@ -118,14 +142,23 @@ export default function ClientTemplatesList() {
       <TableBody>
         {templates.map((template: Template) => (
           <TableRow
-            key={template._id}
+            key={template.id}
             className="cursor-pointer"
-            onClick={() =>
-              (window.location.href = `/templates/${template._id}`)
-            }
+            onClick={() => {
+              if (template.id && typeof template.id === "string") {
+                router.push(`/templates/${template.id}`);
+              } else {
+                console.error("Invalid template ID:", template);
+                alert("Cannot navigate to template: Invalid ID");
+              }
+            }}
           >
             <TableCell>{template.title}</TableCell>
-            <TableCell>{format(new Date(template.updatedAt), "PPP")}</TableCell>
+            <TableCell>
+              {template.updatedAt
+                ? format(new Date(template.updatedAt), "PPP")
+                : "N/A"}
+            </TableCell>
             <TableCell>
               <Button
                 variant="destructive"
@@ -133,7 +166,7 @@ export default function ClientTemplatesList() {
                 className="size-8"
                 onClick={(e) => {
                   e.stopPropagation();
-                  deleteTemplate(template._id);
+                  deleteTemplateHandler(template.id);
                 }}
               >
                 <Delete />

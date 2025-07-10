@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
-import connectDB from "@/lib/db";
-import Template from "@/models/template";
+import { getTemplate } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -18,25 +17,24 @@ interface TemplateData {
   id: string;
   title: string;
   content: string;
-  fields: Record<string, string>;
+  defaultFields: Record<string, string>;
 }
 
 async function fetchTemplate(id: string): Promise<TemplateData | null> {
-  await connectDB();
   try {
-    const template = await Template.findById(id)
-      .select("title content fields")
-      .lean();
-    if (!template) return null;
-
+    const template = await getTemplate(id);
+    console.log("Fetched template:", template);
     return {
-      id: template._id.toString(),
+      id: template.id,
       title: template.title,
       content: template.content,
-      fields: template.defaultFields,
+      defaultFields: template.defaultFields || {},
     };
-  } catch (err) {
-    console.error("Error fetching template:", err);
+  } catch (error: any) {
+    console.error(
+      "Error fetching template:",
+      error.response?.data || error.message
+    );
     return null;
   }
 }
@@ -48,7 +46,7 @@ export default async function TemplateEditPage({
 }) {
   const templateData = await fetchTemplate(params.id);
   if (!templateData) {
-    return notFound(); // ← RETURN THIS
+    return notFound();
   }
 
   return (

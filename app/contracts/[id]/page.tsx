@@ -9,8 +9,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
-import Contract from "@/models/contract";
-import connectDB from "@/lib/db";
+import { getContract } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -22,15 +21,20 @@ interface ContractData {
 }
 
 async function fetchContract(id: string): Promise<ContractData | null> {
-  await connectDB();
   try {
-    const contract = await Contract.findById(id)
-      .select("title content fields")
-      .lean();
+    const contract = await getContract(id);
     console.log("Fetched contract:", contract);
-    return contract as ContractData | null;
-  } catch (err) {
-    console.error("Error fetching contract:", err);
+    return {
+      id: contract.id,
+      title: contract.title,
+      content: contract.content,
+      fields: contract.fields || {},
+    };
+  } catch (error: any) {
+    console.error(
+      "Error fetching contract:",
+      error.response?.data || error.message
+    );
     return null;
   }
 }
@@ -42,7 +46,7 @@ export default async function ContractEditPage({
 }) {
   const contractData = await fetchContract(params.id);
   if (!contractData) {
-    notFound();
+    return notFound();
   }
 
   return (
@@ -65,7 +69,7 @@ export default async function ContractEditPage({
           </BreadcrumbList>
         </Breadcrumb>
       </header>
-      <ContractPage contractData={contractData} />
+      <ContractPage contractData={contractData} isTemplate={false} />
     </div>
   );
 }

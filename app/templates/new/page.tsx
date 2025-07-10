@@ -30,7 +30,7 @@ function page() {
           </BreadcrumbList>
         </Breadcrumb>
       </header>
-      <ContractPage isTemplate={true} />;
+      <ContractPage isTemplate={true} />
     </div>
   );
 }

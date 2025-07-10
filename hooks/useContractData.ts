@@ -1,6 +1,18 @@
 import { useCallback } from "react";
+import { getContract, getTemplate } from "@/lib/api";
 
-type Field = { id: number; fieldName: string; fieldValue: any };
+interface ContractDataParams {
+  id: string | null;
+  isTemplate: boolean;
+  setTitle: (title: string) => void;
+  setContent: (content: string) => void;
+  setFields: (
+    fields: { id: number; fieldName: string; fieldValue: string }[]
+  ) => void;
+  setContractId: (id: string | null) => void;
+  setIsLoading: (loading: boolean) => void;
+  setSaveError: (error: string | null) => void;
+}
 
 export function useContractData({
   id,
@@ -11,76 +23,41 @@ export function useContractData({
   setContractId,
   setIsLoading,
   setSaveError,
-}: {
-  id: string | null;
-  isTemplate: boolean;
-  setTitle: (t: string) => void;
-  setContent: (c: string) => void;
-  setFields: (f: Field[]) => void;
-  setContractId: (id: string) => void;
-  setIsLoading: (b: boolean) => void;
-  setSaveError: (msg: string) => void;
-}) {
+}: ContractDataParams) {
   const fetchContractData = useCallback(async () => {
     if (!id) {
       setIsLoading(false);
       return;
     }
-
     try {
-      setIsLoading(true);
-      const response = await fetch(
-        `/api/${isTemplate ? "templates" : "contracts"}/${id}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache",
-          },
-          cache: "no-store",
-        }
+      const data = isTemplate ? await getTemplate(id) : await getContract(id);
+      console.log(`Fetched ${isTemplate ? "template" : "contract"}:`, data);
+      setTitle(data.title || "");
+      setContent(data.content || "");
+      const fields = isTemplate ? data.defaultFields : data.fields;
+      setFields(
+        fields
+          ? Object.entries(fields).map(([fieldName, fieldValue], index) => ({
+              id: index,
+              fieldName,
+              fieldValue: String(fieldValue),
+            }))
+          : []
       );
-
-      if (response.ok) {
-        const data = await response.json();
-        setTitle(data.title || "");
-        setContent(data.content || "");
-        setFields(
-          isTemplate && data.defaultFields
-            ? Object.entries(data.defaultFields).map(
-                ([fieldName, fieldValue], index) => ({
-                  id: index,
-                  fieldName,
-                  fieldValue: fieldValue || "",
-                })
-              )
-            : data.fields
-            ? Object.entries(data.fields).map(
-                ([fieldName, fieldValue], index) => ({
-                  id: index,
-                  fieldName,
-                  fieldValue: fieldValue || "",
-                })
-              )
-            : []
-        );
-        setContractId(data.id || id);
-      } else {
-        const errorText = await response.text();
-        setSaveError(
-          `Failed to fetch ${isTemplate ? "template" : "contract"}: ${
-            response.status
-          } ${errorText}`
-        );
-        console.error("Fetch failed:", response.status, errorText);
-      }
-    } catch (err) {
+      setContractId(data.id);
+      setSaveError(null);
+    } catch (error: any) {
+      console.error(
+        `Error fetching ${isTemplate ? "template" : "contract"}:`,
+        error.response?.data || error.message
+      );
       setSaveError(
-        `Error fetching ${isTemplate ? "template" : "contract"}: ${
-          err instanceof Error ? err.message : "Unknown error"
-        }`
+        error.response?.status === 403
+          ? `Permission denied: Unable to load ${
+              isTemplate ? "template" : "contract"
+            }`
+          : `Failed to load ${isTemplate ? "template" : "contract"}`
       );
-      console.error("Fetch error:", err);
     } finally {
       setIsLoading(false);
     }

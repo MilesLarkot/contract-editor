@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
 interface TemplateData {
-  _id: string;
+  id: string;
   title: string;
   content: string;
   defaultFields: Map<string, string>;
@@ -30,7 +30,7 @@ export const useConvertTemplateToContract = () => {
         title: template.title,
         content: template.content,
         fields: template.defaultFields,
-        templateId: template._id,
+        templateId: template.id,
         metadata: {
           createdBy: undefined,
         },

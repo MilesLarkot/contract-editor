@@ -15,56 +15,78 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
+import { getContracts, deleteContract } from "@/lib/api";
 
 interface Contract {
-  _id: string;
+  id: string;
   title: string;
   content: string;
-  updatedAt: string;
+  updatedAt?: string | null;
   fields?: Record<string, string>;
 }
 
-export default function ClientContractList() {
-  const [contracts, setContracts] = useState([]);
+export default function ClientContractsList() {
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    fetch("/api/contracts")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch contracts");
-
-        return res.json();
-      })
-      .then((data) => setContracts(data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    async function fetchContracts() {
+      try {
+        const data = await getContracts();
+        console.log("Fetched contracts:", data);
+        const validContracts = data.filter(
+          (contract: Contract) => contract.id && typeof contract.id === "string"
+        );
+        if (validContracts.length < data.length) {
+          console.warn(
+            "Some contracts were filtered out due to missing or invalid id:",
+            data
+          );
+        }
+        setContracts(validContracts);
+      } catch (error: any) {
+        console.error(
+          "Failed to fetch contracts:",
+          error.response?.data || error.message
+        );
+        setError("Failed to load contracts");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchContracts();
   }, []);
 
-  const deleteContract = async (id: string) => {
+  const deleteContractHandler = async (id: string) => {
     const confirm = window.confirm("Sure you wanna delete this contract?");
     if (!confirm) return;
 
-    const res = await fetch(`/api/contracts/${id}`, {
-      method: "DELETE",
-    });
-
-    if (res.ok) {
-      setContracts((prev) => prev.filter((c: Contract) => c._id !== id));
-    } else {
-      alert("Failed to delete contract");
+    try {
+      await deleteContract(id);
+      setContracts((prev) => prev.filter((c: Contract) => c.id !== id));
+    } catch (error: any) {
+      console.error(
+        "Error deleting contract:",
+        error.response?.data || error.message
+      );
+      alert(
+        error.response?.status === 403
+          ? "Permission denied: Unable to delete contract"
+          : "Failed to delete contract"
+      );
     }
   };
 
   if (loading) return <Loader2 className="animate-spin m-auto" />;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (error) return <p className="text-destruction">{error}</p>;
 
   if (contracts.length === 0) {
     return (
       <p className="text-center text-muted-foreground">
         No contracts found.{" "}
-        <Link href="/contracts/new" className="text-blue-500 underline">
+        <Link href="/contracts/new" className="text-info underline">
           Create one
         </Link>
         .
@@ -85,12 +107,23 @@ export default function ClientContractList() {
       <TableBody>
         {contracts.map((contract: Contract) => (
           <TableRow
-            key={contract._id}
+            key={contract.id}
             className="cursor-pointer"
-            onClick={() => router.push(`/contracts/${contract._id}`)}
+            onClick={() => {
+              if (contract.id && typeof contract.id === "string") {
+                router.push(`/contracts/${contract.id}`);
+              } else {
+                console.error("Invalid contract ID:", contract);
+                alert("Cannot navigate to contract: Invalid ID");
+              }
+            }}
           >
             <TableCell>{contract.title}</TableCell>
-            <TableCell>{format(new Date(contract.updatedAt), "PPP")}</TableCell>
+            <TableCell>
+              {contract.updatedAt
+                ? format(new Date(contract.updatedAt), "PPP")
+                : "N/A"}
+            </TableCell>
             <TableCell>
               <Button
                 variant="destructive"
@@ -98,7 +131,7 @@ export default function ClientContractList() {
                 className="size-8"
                 onClick={(e) => {
                   e.stopPropagation();
-                  deleteContract(contract._id);
+                  deleteContractHandler(contract.id);
                 }}
               >
                 <Delete />
