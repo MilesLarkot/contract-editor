@@ -10,6 +10,7 @@ import {
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
 import { getContract } from "@/lib/api";
+import { AxiosError } from "axios";
 
 export const dynamic = "force-dynamic";
 
@@ -30,11 +31,17 @@ async function fetchContract(id: string): Promise<ContractData | null> {
       content: contract.content,
       fields: contract.fields || {},
     };
-  } catch (error: any) {
-    console.error(
-      "Error fetching contract:",
-      error.response?.data || error.message
-    );
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(
+        "Error fetching contract:",
+        error.response?.data || error.message
+      );
+    } else if (error instanceof Error) {
+      console.error("Error fetching contract:", error.message);
+    } else {
+      console.error("Unknown error fetching contract:", error);
+    }
     return null;
   }
 }

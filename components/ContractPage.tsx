@@ -115,7 +115,7 @@ export default function ContractPage({
 
   const triggerDebouncedSave = useCallback(() => {
     debouncedSaveRef.current?.();
-  }, []);
+  }, [debouncedSaveRef]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

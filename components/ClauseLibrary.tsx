@@ -7,6 +7,7 @@ import {
   updateClause,
   deleteClause,
 } from "@/lib/api";
+import { AxiosError } from "axios";
 
 interface Clause {
   id: string;
@@ -30,11 +31,17 @@ function ClauseLibrary() {
         const data = await getClauses();
         console.log("Fetched clauses:", data);
         setClauses(data);
-      } catch (error: any) {
-        console.error(
-          "Failed to fetch clauses:",
-          error.response?.data || error.message
-        );
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          console.error(
+            "Failed to fetch clauses:",
+            error.response?.data || error.message
+          );
+        } else if (error instanceof Error) {
+          console.error("Failed to fetch clauses:", error.message);
+        } else {
+          console.error("Unknown error fetching clauses:", error);
+        }
         setError("Failed to load clauses");
       } finally {
         setIsLoading(false);
@@ -69,16 +76,24 @@ function ClauseLibrary() {
       setNewClauseTitle("");
       setNewClauseContent("");
       setError(null);
-    } catch (error: any) {
-      console.error(
-        "Error creating clause:",
-        error.response?.data || error.message
-      );
-      setError(
-        error.response?.status === 403
-          ? "Permission denied: Unable to create clause"
-          : "Failed to create clause"
-      );
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error(
+          "Error creating clause:",
+          error.response?.data || error.message
+        );
+        setError(
+          error.response?.status === 403
+            ? "Permission denied: Unable to create clause"
+            : "Failed to create clause"
+        );
+      } else if (error instanceof Error) {
+        console.error("Error creating clause:", error.message);
+        setError("Failed to create clause");
+      } else {
+        console.error("Unknown error creating clause:", error);
+        setError("An unknown error occurred");
+      }
     }
   };
 
@@ -106,16 +121,24 @@ function ClauseLibrary() {
       setEditClauseTitle("");
       setEditClauseContent("");
       setError(null);
-    } catch (error: any) {
-      console.error(
-        "Error updating clause:",
-        error.response?.data || error.message
-      );
-      setError(
-        error.response?.status === 403
-          ? "Permission denied: Unable to update clause"
-          : "Failed to update clause"
-      );
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error(
+          "Error updating clause:",
+          error.response?.data || error.message
+        );
+        setError(
+          error.response?.status === 403
+            ? "Permission denied: Unable to update clause"
+            : "Failed to update clause"
+        );
+      } else if (error instanceof Error) {
+        console.error("Error updating clause:", error.message);
+        setError("Failed to update clause");
+      } else {
+        console.error("Unknown error updating clause:", error);
+        setError("An unknown error occurred");
+      }
     }
   };
 
@@ -131,16 +154,24 @@ function ClauseLibrary() {
       const updatedClauses = await getClauses();
       setClauses(updatedClauses);
       setError(null);
-    } catch (error: any) {
-      console.error(
-        "Error deleting clause:",
-        error.response?.data || error.message
-      );
-      setError(
-        error.response?.status === 403
-          ? "Permission denied: Unable to delete clause"
-          : "Failed to delete clause"
-      );
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error(
+          "Error deleting clause:",
+          error.response?.data || error.message
+        );
+        setError(
+          error.response?.status === 403
+            ? "Permission denied: Unable to delete clause"
+            : "Failed to delete clause"
+        );
+      } else if (error instanceof Error) {
+        console.error("Error deleting clause:", error.message);
+        setError("Failed to delete clause");
+      } else {
+        console.error("Unknown error deleting clause:", error);
+        setError("An unknown error occurred");
+      }
     }
   };
 

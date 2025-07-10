@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import { getContracts, deleteContract } from "@/lib/api";
+import { AxiosError } from "axios";
 
 interface Contract {
   id: string;
@@ -46,11 +47,17 @@ export default function ClientContractsList() {
           );
         }
         setContracts(validContracts);
-      } catch (error: any) {
-        console.error(
-          "Failed to fetch contracts:",
-          error.response?.data || error.message
-        );
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          console.error(
+            "Failed to fetch contracts:",
+            error.response?.data || error.message
+          );
+        } else if (error instanceof Error) {
+          console.error("Failed to fetch contracts:", error.message);
+        } else {
+          console.error("Unknown error:", error);
+        }
         setError("Failed to load contracts");
       } finally {
         setLoading(false);
@@ -66,16 +73,24 @@ export default function ClientContractsList() {
     try {
       await deleteContract(id);
       setContracts((prev) => prev.filter((c: Contract) => c.id !== id));
-    } catch (error: any) {
-      console.error(
-        "Error deleting contract:",
-        error.response?.data || error.message
-      );
-      alert(
-        error.response?.status === 403
-          ? "Permission denied: Unable to delete contract"
-          : "Failed to delete contract"
-      );
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error(
+          "Error deleting contract:",
+          error.response?.data || error.message
+        );
+        alert(
+          error.response?.status === 403
+            ? "Permission denied: Unable to delete contract"
+            : "Failed to delete contract"
+        );
+      } else if (error instanceof Error) {
+        console.error("Error deleting contract:", error.message);
+        alert("Failed to delete contract");
+      } else {
+        console.error("Unknown error deleting contract:", error);
+        alert("An unknown error occurred");
+      }
     }
   };
 

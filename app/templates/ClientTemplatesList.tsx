@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { getTemplates, deleteTemplate, createContract } from "@/lib/api";
 import { useConvertTemplateToContract } from "@/hooks/useConvertTemplateToContract";
+import { AxiosError } from "axios";
 
 interface Template {
   id: string;
@@ -48,11 +49,17 @@ export default function ClientTemplatesList() {
           );
         }
         setTemplates(validTemplates);
-      } catch (error: any) {
-        console.error(
-          "Failed to fetch templates:",
-          error.response?.data || error.message
-        );
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          console.error(
+            "Failed to fetch templates:",
+            error.response?.data || error.message
+          );
+        } else if (error instanceof Error) {
+          console.error("Failed to fetch templates:", error.message);
+        } else {
+          console.error("Unknown error while fetching templates:", error);
+        }
         setError("Failed to load templates");
       } finally {
         setLoading(false);
@@ -68,16 +75,24 @@ export default function ClientTemplatesList() {
     try {
       await deleteTemplate(id);
       setTemplates((prev) => prev.filter((t: Template) => t.id !== id));
-    } catch (error: any) {
-      console.error(
-        "Error deleting template:",
-        error.response?.data || error.message
-      );
-      alert(
-        error.response?.status === 403
-          ? "Permission denied: Unable to delete template"
-          : "Failed to delete template"
-      );
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error(
+          "Error deleting template:",
+          error.response?.data || error.message
+        );
+        alert(
+          error.response?.status === 403
+            ? "Permission denied: Unable to delete template"
+            : "Failed to delete template"
+        );
+      } else if (error instanceof Error) {
+        console.error("Error deleting template:", error.message);
+        alert("Failed to delete template");
+      } else {
+        console.error("Unknown error deleting template:", error);
+        alert("An unknown error occurred");
+      }
     }
   };
 
@@ -101,16 +116,24 @@ export default function ClientTemplatesList() {
       console.log("Creating contract with payload:", payload);
       const { id } = await createContract(payload);
       router.push(`/contracts/${id}`);
-    } catch (error: any) {
-      console.error(
-        "Error creating contract:",
-        error.response?.data || error.message
-      );
-      alert(
-        error.response?.status === 403
-          ? "Permission denied: Unable to create contract"
-          : "Failed to create contract from template"
-      );
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        console.error(
+          "Error creating contract:",
+          error.response?.data || error.message
+        );
+        alert(
+          error.response?.status === 403
+            ? "Permission denied: Unable to create contract"
+            : "Failed to create contract from template"
+        );
+      } else if (error instanceof Error) {
+        console.error("Error creating contract:", error.message);
+        alert("Failed to create contract from template");
+      } else {
+        console.error("Unknown error creating contract:", error);
+        alert("An unknown error occurred");
+      }
     }
   };
 
