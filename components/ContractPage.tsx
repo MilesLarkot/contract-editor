@@ -189,6 +189,7 @@ export default function ContractPage({
         addField={addField}
         updateField={updateField}
         initialFields={fields}
+        content={content}
         isActive={isActive}
         isTemplate={isTemplate}
       />

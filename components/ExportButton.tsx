@@ -159,6 +159,10 @@ const generatePdfHtml = (title: string, content: string): string => {
   
     @media print {
     .button { display: none; }
+    .paper {
+    filter: none;
+    width: 100%;
+    margin: 0;}
 }
   </style>
 </head>

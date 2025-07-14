@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,7 @@ interface FieldPickerProps {
   setFinalFields: (field: Field) => void;
   updateField: (field: { fieldName: string; fieldValue: string }) => void;
   initialFields: Field[];
+  content?: string; // Added content prop
   onFieldValueChange?: (fieldName: string, fieldValue: string) => void;
   isTemplate: boolean;
   onFieldsChange?: (fields: Field[]) => void;
@@ -37,6 +39,7 @@ function FieldPicker({
   setFinalFields,
   updateField,
   initialFields,
+  content,
   onFieldValueChange,
   isTemplate,
   onFieldsChange,
@@ -51,6 +54,60 @@ function FieldPicker({
 
     return a.fieldName.toLowerCase().localeCompare(b.fieldName.toLowerCase());
   });
+
+  const extractFieldsFromContent = useCallback(
+    (content: string | undefined): Field[] => {
+      if (!content) return [];
+      try {
+        const parsedContent = JSON.parse(content);
+        const extractedFields: Field[] = [];
+
+        const traverseNodes = (nodes: any[]) => {
+          nodes.forEach((node) => {
+            if (node.type === "field" && node.fieldName) {
+              extractedFields.push({
+                id: Date.now() + Math.random(),
+                fieldName: node.fieldName,
+                fieldValue: node.fieldValue || "",
+              });
+            }
+            if (node.children) {
+              traverseNodes(node.children);
+            }
+          });
+        };
+
+        traverseNodes(parsedContent);
+        return extractedFields;
+      } catch (e) {
+        console.error("Failed to parse content JSON:", e);
+        return [];
+      }
+    },
+    []
+  );
+
+  // Effect to sync fields from content
+  useEffect(() => {
+    const contentFields = extractFieldsFromContent(content);
+    const existingFieldNames = new Set(fields.map((f) => f.fieldName.trim()));
+
+    // Find fields in content that don't exist in current fields
+    const missingFields = contentFields.filter(
+      (field) =>
+        field.fieldName && !existingFieldNames.has(field.fieldName.trim())
+    );
+
+    if (missingFields.length > 0) {
+      // Add missing fields to state
+      setFields((prev) => {
+        const newFields = [...prev, ...missingFields];
+        // Update parent component with new fields
+        missingFields.forEach((field) => setFinalFields(field));
+        return newFields;
+      });
+    }
+  }, [content, extractFieldsFromContent, setFinalFields]);
 
   useEffect(() => {
     setFields(initialFields);

@@ -14,6 +14,7 @@ interface InspectorProps {
   addField: (field: Field) => void;
   updateField: (field: { fieldName: string; fieldValue: string }) => void;
   initialFields: Field[];
+  content?: string;
   isActive: boolean;
   isTemplate: boolean;
 }
@@ -24,6 +25,7 @@ function Inspector({
   addField,
   updateField,
   initialFields,
+  content,
   isActive,
   isTemplate,
 }: InspectorProps) {
@@ -56,6 +58,7 @@ function Inspector({
             setFinalFields={addField}
             updateField={updateField}
             initialFields={initialFields}
+            content={content}
             isTemplate={isTemplate}
           />
         ) : (
