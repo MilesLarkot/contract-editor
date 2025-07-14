@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Delete, Loader2 } from "lucide-react";
 import {
   Table,
-  TableCaption,
   TableHeader,
   TableHead,
   TableBody,
@@ -74,7 +73,6 @@ export default function ClientContractList() {
 
   return (
     <Table>
-      <TableCaption>A list of your contracts.</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead className="w-fit">Title</TableHead>
@@ -86,7 +84,7 @@ export default function ClientContractList() {
         {contracts.map((contract: Contract) => (
           <TableRow
             key={contract._id}
-            className="cursor-pointer"
+            className="cursor-pointer bg-white"
             onClick={() => router.push(`/contracts/${contract._id}`)}
           >
             <TableCell>{contract.title}</TableCell>

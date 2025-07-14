@@ -83,21 +83,21 @@ body {
 
     /* Sidebar - Updated for better visual hierarchy */
     --sidebar: 268 24% 38%;
-    --sidebar-background: 268 24% 38%;
+    --sidebar-background: 0 0% 98%;
     /* Stronger purple */
-    --sidebar-foreground: 0 0% 100%;
+    --sidebar-foreground: 240 5.3% 26.1%;
     /* White for better contrast */
-    --sidebar-primary: 264 17% 61%;
+    --sidebar-primary: 240 5.9% 10%;
     /* Strong purple for primary */
-    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-primary-foreground: 0 0% 98%;
     /* Black text for contrast */
-    --sidebar-accent: 264 17% 61%;
+    --sidebar-accent: 240 4.8% 95.9%;
     /* Light purple for accent */
-    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
     /* White for contrast */
-    --sidebar-border: 264 17% 45%;
+    --sidebar-border: 220 13% 91%;
     /* Darker border for better separation */
-    --sidebar-ring: 264 17% 61%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
     /* Keep it matching the new primary */
 
     --radius: 0.5rem;
@@ -165,18 +165,18 @@ body {
     --chart-5: 340 75% 55%;
 
     /* Sidebar - Updated for dark mode */
-    --sidebar-background: 268 24% 15%;
+    --sidebar-background: 240 5.9% 10%;
     /* Darker purple shade */
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 264 17% 61%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
     /* Same as main primary in dark mode */
-    --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 268 24% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
     /* Same as main secondary in dark mode */
-    --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 268 24% 25%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
     /* Dark purple border */
-    --sidebar-ring: 264 17% 61%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Delete, Loader2 } from "lucide-react";
 import {
   Table,
-  TableCaption,
   TableHeader,
   TableHead,
   TableBody,
@@ -108,7 +107,6 @@ export default function ClientTemplatesList() {
 
   return (
     <Table>
-      <TableCaption>A list of your templates.</TableCaption>
       <TableHeader>
         <TableRow>
           <TableHead className="w-fit">Title</TableHead>
@@ -121,7 +119,7 @@ export default function ClientTemplatesList() {
         {templates.map((template: Template) => (
           <TableRow
             key={template.id}
-            className="cursor-pointer"
+            className="cursor-pointer bg-white"
             onClick={() => (window.location.href = `/templates/${template.id}`)}
           >
             <TableCell>{template.title}</TableCell>

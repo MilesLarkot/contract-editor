@@ -13,13 +13,7 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
-import {
-  DropdownMenu,
-  DropdownMenuGroup,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Dialog,
   DialogContent,
@@ -62,7 +56,7 @@ export default function Page() {
       });
   }, [dialogOpen]);
 
-  const [isGridView, setIsGridView] = useState(false);
+  const [isGridView, setIsGridView] = useState(true);
 
   const createContractFromTemplate = async (template: Template) => {
     const contractData = convertTemplateToContract({
@@ -121,28 +115,10 @@ export default function Page() {
             </BreadcrumbItem>
           </BreadcrumbList>
           <div className="ml-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="default">
-                  <CirclePlus /> New
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="start">
-                <DropdownMenuGroup>
-                  <Link href="/contracts/new">
-                    <DropdownMenuItem className="cursor-pointer">
-                      From Scratch
-                    </DropdownMenuItem>
-                  </Link>
-                  <DropdownMenuItem
-                    className="cursor-pointer"
-                    onSelect={() => setDialogOpen(true)}
-                  >
-                    From Template
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="default" onClick={() => setDialogOpen(true)}>
+              <CirclePlus /> New
+            </Button>
+
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogContent className="sm:max-w-[425px] md:max-w-[750px] lg:max-w-[900px] w-fit select-none min-w-[300px]">
                 <DialogHeader>
@@ -154,7 +130,7 @@ export default function Page() {
                     <Switch
                       checked={isGridView}
                       onCheckedChange={setIsGridView}
-                      className="ml-3"
+                      className="ml-auto"
                     />
                   </DialogDescription>
                 </DialogHeader>
@@ -183,7 +159,7 @@ export default function Page() {
                   ) : (
                     <div className="flex items-start overflow-hidden w-full gap-4 flex-col">
                       <Link href="/contracts/new">
-                        <div className="w-full cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:translate-x-2 transition-all duration-300 group">
+                        <div className="w-full cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:translate-x-2 transition-transform duration-300 group hover:border-l-4 pl-2 border-primary rounded">
                           <p className="font-bold group-hover:text-primary transition-colors duration-300">
                             Blank contract
                           </p>
@@ -193,7 +169,7 @@ export default function Page() {
                       {templates.map((tpl) => (
                         <div
                           key={tpl._id}
-                          className="w-full cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:translate-x-2 transition-all duration-300 group"
+                          className="w-full cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:translate-x-2 transition-all duration-300 group hover:border-l-4 pl-2 border-primary rounded"
                           onClick={() => createContractFromTemplate(tpl)}
                         >
                           <p className="font-bold group-hover:text-primary transition-colors duration-300">
@@ -210,7 +186,7 @@ export default function Page() {
           </div>
         </Breadcrumb>
       </header>
-      <div className="p-4 bg-gray-100">
+      <div className=" bg-gray-100">
         <ClientContractList />
       </div>
     </div>
