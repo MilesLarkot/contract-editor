@@ -10,11 +10,20 @@ export async function GET(
   { params }: { params: Params }
 ) {
   const template = await Template.findById(params.id)
-    .select("title content defaultFields")
+    .select("title content defaultFields metadata.description updatedAt")
     .lean();
   if (!template)
     return NextResponse.json({ error: "Template Not found" }, { status: 404 });
-  return NextResponse.json(template);
+  return NextResponse.json({
+    id: template._id,
+    title: template.title,
+    content: template.content,
+    defaultFields: template.defaultFields,
+    description: template.metadata?.description || "",
+    updatedAt: template.updatedAt
+      ? new Date(template.updatedAt).toISOString()
+      : "",
+  });
 }
 
 export async function PATCH(
@@ -22,16 +31,33 @@ export async function PATCH(
   { params }: { params: Params }
 ) {
   const body = await request.json();
+  const updateData = {
+    title: body.title,
+    content: body.content,
+    defaultFields: body.defaultFields,
+    "metadata.description": body.description,
+  };
   const updated = await Template.findByIdAndUpdate(
     params.id,
-    { $set: body },
+    { $set: updateData },
     {
       new: true,
     }
-  ).lean();
+  )
+    .select("title content defaultFields metadata.description updatedAt")
+    .lean();
   if (!updated)
     return NextResponse.json({ error: "Template Not found" }, { status: 404 });
-  return NextResponse.json(updated);
+  return NextResponse.json({
+    id: updated._id,
+    title: updated.title,
+    content: updated.content,
+    defaultFields: updated.defaultFields,
+    description: updated.metadata?.description || "",
+    updatedAt: updated.updatedAt
+      ? new Date(updated.updatedAt).toISOString()
+      : "",
+  });
 }
 
 export async function DELETE(

@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Delete, Loader2, NotebookPen } from "lucide-react";
+import { Delete, Loader2 } from "lucide-react";
 import {
   Table,
   TableCaption,
@@ -15,12 +15,13 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
-import { useConvertTemplateToContract } from "@/hooks/useConvertTemplateToContract";
+// import { useConvertTemplateToContract } from "@/hooks/useConvertTemplateToContract";
 
 interface Template {
-  _id: string;
+  id: string;
   title: string;
   content: string;
+  description: string;
   updatedAt: string;
   defaultFields?: Record<string, string>;
 }
@@ -29,8 +30,8 @@ export default function ClientTemplatesList() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const router = useRouter();
-  const { convertTemplateToContract } = useConvertTemplateToContract();
+  // const router = useRouter();
+  // const { convertTemplateToContract } = useConvertTemplateToContract();
 
   useEffect(() => {
     fetch("/api/templates")
@@ -52,43 +53,43 @@ export default function ClientTemplatesList() {
     });
 
     if (res.ok) {
-      setTemplates((prev) => prev.filter((t: Template) => t._id !== id));
+      setTemplates((prev) => prev.filter((t: Template) => t.id !== id));
     } else {
       alert("Failed to delete template");
     }
   };
 
-  const createContractFromTemplate = async (template: Template) => {
-    const contractData = convertTemplateToContract({
-      _id: template._id,
-      title: template.title,
-      content: template.content,
-      defaultFields: new Map(Object.entries(template.defaultFields || {})),
-      metadata: { category: undefined },
-    });
+  // const createContractFromTemplate = async (template: Template) => {
+  //   const contractData = convertTemplateToContract({
+  //     _id: template.id,
+  //     title: template.title,
+  //     content: template.content,
+  //     defaultFields: new Map(Object.entries(template.defaultFields || {})),
+  //     metadata: { category: undefined, description: template.description },
+  //   });
 
-    try {
-      const res = await fetch("/api/contracts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: contractData.title,
-          content: contractData.content,
-          fields: Object.fromEntries(contractData.fields),
-          templateId: contractData.templateId,
-          metadata: contractData.metadata,
-        }),
-      });
+  //   try {
+  //     const res = await fetch("/api/contracts", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         title: contractData.title,
+  //         content: contractData.content,
+  //         fields: Object.fromEntries(contractData.fields),
+  //         templateId: contractData.templateId,
+  //         metadata: contractData.metadata,
+  //       }),
+  //     });
 
-      if (!res.ok) throw new Error("Failed to create contract");
+  //     if (!res.ok) throw new Error("Failed to create contract");
 
-      const { id } = await res.json();
-      router.push(`/contracts/${id}`);
-    } catch (err) {
-      alert("Failed to create contract from template");
-      console.error(err);
-    }
-  };
+  //     const { id } = await res.json();
+  //     router.push(`/contracts/${id}`);
+  //   } catch (err) {
+  //     alert("Failed to create contract from template");
+  //     console.error(err);
+  //   }
+  // };
 
   if (loading) return <Loader2 className="animate-spin m-auto" />;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -111,6 +112,7 @@ export default function ClientTemplatesList() {
       <TableHeader>
         <TableRow>
           <TableHead className="w-fit">Title</TableHead>
+          <TableHead>Description</TableHead>
           <TableHead>Last Updated</TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
@@ -118,14 +120,17 @@ export default function ClientTemplatesList() {
       <TableBody>
         {templates.map((template: Template) => (
           <TableRow
-            key={template._id}
+            key={template.id}
             className="cursor-pointer"
-            onClick={() =>
-              (window.location.href = `/templates/${template._id}`)
-            }
+            onClick={() => (window.location.href = `/templates/${template.id}`)}
           >
             <TableCell>{template.title}</TableCell>
-            <TableCell>{format(new Date(template.updatedAt), "PPP")}</TableCell>
+            <TableCell>{template.description || "No description"}</TableCell>
+            <TableCell>
+              {template.updatedAt
+                ? format(new Date(template.updatedAt), "PPP")
+                : "Unknown"}
+            </TableCell>
             <TableCell>
               <Button
                 variant="destructive"
@@ -133,12 +138,12 @@ export default function ClientTemplatesList() {
                 className="size-8"
                 onClick={(e) => {
                   e.stopPropagation();
-                  deleteTemplate(template._id);
+                  deleteTemplate(template.id);
                 }}
               >
                 <Delete />
               </Button>
-              <Button
+              {/* <Button
                 size="icon"
                 className="size-8 ml-2"
                 onClick={(e) => {
@@ -147,7 +152,7 @@ export default function ClientTemplatesList() {
                 }}
               >
                 <NotebookPen />
-              </Button>
+              </Button> */}
             </TableCell>
           </TableRow>
         ))}

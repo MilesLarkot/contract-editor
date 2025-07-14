@@ -6,6 +6,7 @@ export function useContractData({
   id,
   isTemplate,
   setTitle,
+  setDescription,
   setContent,
   setFields,
   setContractId,
@@ -15,6 +16,7 @@ export function useContractData({
   id: string | null;
   isTemplate: boolean;
   setTitle: (t: string) => void;
+  setDescription: (d: string) => void;
   setContent: (c: string) => void;
   setFields: (f: Field[]) => void;
   setContractId: (id: string) => void;
@@ -44,6 +46,7 @@ export function useContractData({
       if (response.ok) {
         const data = await response.json();
         setTitle(data.title || "");
+        setDescription(data.description || "");
         setContent(data.content || "");
         setFields(
           isTemplate && data.defaultFields
@@ -88,6 +91,7 @@ export function useContractData({
     id,
     isTemplate,
     setTitle,
+    setDescription,
     setContent,
     setFields,
     setContractId,

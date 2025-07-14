@@ -21,6 +21,7 @@ interface ContractData {
   defaultFields?: Record<string, string>;
   id?: string;
   title?: string;
+  description?: string;
   content?: string;
   fields?: Record<string, string>;
 }
@@ -58,6 +59,9 @@ export default function ContractPage({
       : []
   );
   const [title, setTitle] = useState(contractData?.title || "");
+  const [description, setDescription] = useState(
+    contractData?.description || ""
+  );
   const [content, setContent] = useState(contractData?.content || "");
   const [contractId, setContractId] = useState<string | null>(id);
   const [localSaveError, setSaveError] = useState<string | null>(null);
@@ -69,6 +73,7 @@ export default function ContractPage({
     id,
     isTemplate,
     setTitle,
+    setDescription,
     setContent,
     setFields,
     setContractId,
@@ -105,6 +110,7 @@ export default function ContractPage({
 
   const { saveContract, isSaving, lastSaved, saveError } = useSaveContract({
     title,
+    description,
     content,
     fields,
     contractId,
@@ -127,7 +133,7 @@ export default function ContractPage({
     isLoading,
     triggerDebouncedSave,
     debouncedSaveRef,
-    deps: [title, content, fields, contractId],
+    deps: [title, description, content, fields, contractId],
   });
 
   console.log(localSaveError);
@@ -135,12 +141,7 @@ export default function ContractPage({
   const [previewPDF, setPreviewPDF] = useState(false);
 
   return (
-    <div
-      className="sm:pr-[300px] h-screen min-h-fit"
-      // className={`${
-      //   previewPDF ? "sm:pr-0" : "sm:pr-[300px]"
-      // } h-screen min-h-fit`}
-    >
+    <div className="sm:pr-[300px] h-screen min-h-fit">
       <InspectorButton
         toggle={() => setIsActive((prev) => !prev)}
         isActive={isActive}
@@ -148,6 +149,7 @@ export default function ContractPage({
       <div className="flex flex-1 flex-col gap-4 px-2 sm:px-10 bg-gray-100 pt-6 min-h-fit">
         <ContractHeader
           title={title}
+          description={description}
           content={content}
           isTemplate={isTemplate}
           isSaving={isSaving}
@@ -155,6 +157,7 @@ export default function ContractPage({
           lastSaved={lastSaved}
           saveError={saveError}
           onTitleChange={setTitle}
+          onDescriptionChange={setDescription}
           onSubmit={handleSubmit}
         />
         <div className="space-x-2 ml-auto">
@@ -182,7 +185,6 @@ export default function ContractPage({
           </div>
         )}
       </div>
-      {/* {previewPDF ? null : ( */}
       <Inspector
         addField={addField}
         updateField={updateField}
@@ -190,7 +192,6 @@ export default function ContractPage({
         isActive={isActive}
         isTemplate={isTemplate}
       />
-      {/* )} */}
     </div>
   );
 }

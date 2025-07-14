@@ -10,9 +10,23 @@ export async function POST(req: Request) {
       title: body.title || "Untitled Template",
       content: body.content || "",
       defaultFields: body.defaultFields || {},
-      metadata: body.metadata || {},
+      metadata: {
+        description: body.description || "",
+        category: body.metadata?.category || "",
+        tags: body.metadata?.tags || [],
+      },
     });
-    return NextResponse.json(template, { status: 201 });
+    return NextResponse.json(
+      {
+        id: template._id,
+        title: template.title,
+        content: template.content,
+        defaultFields: template.defaultFields,
+        description: template.metadata?.description || "",
+        updatedAt: template.updatedAt,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating template:", error);
     return NextResponse.json(
@@ -27,6 +41,19 @@ export async function POST(req: Request) {
 
 export async function GET() {
   await connectDB();
-  const templates = await Template.find({}).lean();
-  return NextResponse.json(templates);
+  const templates = await Template.find({})
+    .select("title content defaultFields metadata.description updatedAt")
+    .lean();
+  return NextResponse.json(
+    templates.map((template) => ({
+      id: template._id,
+      title: template.title,
+      content: template.content,
+      defaultFields: template.defaultFields,
+      description: template.metadata?.description || "",
+      updatedAt: template.updatedAt
+        ? new Date(template.updatedAt).toISOString()
+        : "",
+    }))
+  );
 }

@@ -4,6 +4,7 @@ import ExportButton from "./ExportButton";
 
 interface ContractHeaderProps {
   title: string;
+  description: string;
   content: string;
   isTemplate?: boolean;
   isSaving: boolean;
@@ -11,11 +12,13 @@ interface ContractHeaderProps {
   lastSaved: string | null;
   saveError: string | null;
   onTitleChange: (title: string) => void;
+  onDescriptionChange: (description: string) => void;
   onSubmit: (e: React.FormEvent) => void;
 }
 
 export default function ContractHeader({
   title,
+  description,
   content,
   isTemplate = false,
   isSaving,
@@ -23,6 +26,7 @@ export default function ContractHeader({
   lastSaved,
   saveError,
   onTitleChange,
+  onDescriptionChange,
   onSubmit,
 }: ContractHeaderProps) {
   return (
@@ -57,6 +61,15 @@ export default function ContractHeader({
           value={title}
           onChange={(e) => onTitleChange(e.target.value)}
         />
+        {isTemplate && (
+          <Input
+            id="description"
+            name="description"
+            placeholder="Enter template description"
+            value={description}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+          />
+        )}
       </div>
     </form>
   );

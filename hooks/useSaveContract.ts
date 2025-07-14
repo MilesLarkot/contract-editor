@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from "react";
 
 interface ContractData {
   title: string;
+  description: string;
   content: string;
   fields: { id: number; fieldName: string; fieldValue: string }[];
   contractId: string | null;
@@ -18,6 +19,7 @@ interface SaveContractResult {
 
 export function useSaveContract({
   title,
+  description,
   content,
   fields,
   contractId: initialContractId,
@@ -37,7 +39,7 @@ export function useSaveContract({
     }
     isSavingRef.current = true;
 
-    if (!title && !content && fields.length === 0) {
+    if (!title && !content && fields.length === 0 && !description) {
       isSavingRef.current = false;
       return;
     }
@@ -45,6 +47,7 @@ export function useSaveContract({
     try {
       const contractDataToSave = {
         title: title || "Untitled Template",
+        description: description || "",
         content: content || "",
         [isTemplate ? "defaultFields" : "fields"]: fields.reduce(
           (acc, field) => {
@@ -104,7 +107,7 @@ export function useSaveContract({
       setIsSaving(false);
       isSavingRef.current = false;
     }
-  }, [title, content, fields, contractId, isTemplate]);
+  }, [title, description, content, fields, contractId, isTemplate]);
 
   return {
     saveContract,

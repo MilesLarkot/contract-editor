@@ -7,6 +7,7 @@ interface TemplateData {
   defaultFields: Map<string, string>;
   metadata: {
     category?: string;
+    description?: string;
   };
 }
 
@@ -18,6 +19,7 @@ interface ContractData {
   templateId?: string;
   metadata: {
     createdBy?: string;
+    description?: string;
   };
   versionHistory: { content: string; updatedAt: Date }[];
 }
@@ -33,6 +35,7 @@ export const useConvertTemplateToContract = () => {
         templateId: template._id,
         metadata: {
           createdBy: undefined,
+          description: template.metadata.description,
         },
         versionHistory: [],
       };
