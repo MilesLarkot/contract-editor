@@ -13,7 +13,7 @@ export async function POST(req: Request) {
       metadata: {
         description: body.description || "",
         category: body.metadata?.category || "",
-        tags: body.metadata?.tags || [],
+        tags: body.tags || [],
       },
     });
     return NextResponse.json(
@@ -23,6 +23,7 @@ export async function POST(req: Request) {
         content: template.content,
         defaultFields: template.defaultFields,
         description: template.metadata?.description || "",
+        tags: template.metadata?.tags || [],
         updatedAt: template.updatedAt,
       },
       { status: 201 }
@@ -39,21 +40,45 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
-  await connectDB();
-  const templates = await Template.find({})
-    .select("title content defaultFields metadata.description updatedAt")
-    .lean();
-  return NextResponse.json(
-    templates.map((template) => ({
-      id: template._id,
-      title: template.title,
-      content: template.content,
-      defaultFields: template.defaultFields,
-      description: template.metadata?.description || "",
-      updatedAt: template.updatedAt
-        ? new Date(template.updatedAt).toISOString()
-        : "",
-    }))
-  );
+export async function GET(req: Request) {
+  try {
+    await connectDB();
+    const { searchParams } = new URL(req.url);
+    const query = searchParams.get("q")?.trim() || "";
+
+    const filter: Record<string, unknown> = {};
+    if (query) {
+      const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { title: { $regex: escapedQuery, $options: "i" } },
+        { "metadata.description": { $regex: escapedQuery, $options: "i" } },
+        { "metadata.tags": { $regex: escapedQuery, $options: "i" } },
+      ];
+    }
+
+    const templates = await Template.find(filter)
+      .select(
+        "title content defaultFields metadata.description metadata.tags updatedAt"
+      )
+      .lean();
+    return NextResponse.json(
+      templates.map((template) => ({
+        id: template._id,
+        title: template.title,
+        content: template.content,
+        defaultFields: template.defaultFields,
+        description: template.metadata?.description || "",
+        tags: template.metadata?.tags || [],
+        updatedAt: template.updatedAt
+          ? new Date(template.updatedAt).toISOString()
+          : "",
+      }))
+    );
+  } catch (error) {
+    console.error("Error fetching templates:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch templates" },
+      { status: 500 }
+    );
+  }
 }

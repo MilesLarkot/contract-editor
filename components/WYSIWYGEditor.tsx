@@ -763,10 +763,9 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
       }
     };
 
-    
     return (
       <div>
-<div className="border-b bg-gray-50 p-3 min-h-fit sticky top-20 z-10 max-h-[100px] overflow-scroll">
+        <div className="border-b bg-gray-50 p-3 min-h-fit sticky top-16 z-10 max-h-[100px] overflow-scroll">
           <div className="flex flex-wrap items-center gap-2">
             <Select
               value={
@@ -1062,32 +1061,30 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
             </Button>
           </div>
         </div>
-      <div className="border rounded min-h-fit">
-        
-
-        <div
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-          className="min-h-[600px] mb-12 p-4"
-        >
-          <Slate
-            editor={editor}
-            initialValue={slateValue}
-            onChange={(newVal) => {
-              setInternalValue(newVal);
-              onChange(JSON.stringify(newVal));
-            }}
+        <div className="border rounded min-h-fit">
+          <div
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            className="min-h-[600px] mb-12 p-4"
+          >
+            <Slate
+              editor={editor}
+              initialValue={slateValue}
+              onChange={(newVal) => {
+                setInternalValue(newVal);
+                onChange(JSON.stringify(newVal));
+              }}
             >
-            <Editable
-              renderElement={renderElement}
-              renderLeaf={renderLeaf}
-              placeholder={placeholder}
-              className="h-full outline-none"
+              <Editable
+                renderElement={renderElement}
+                renderLeaf={renderLeaf}
+                placeholder={placeholder}
+                className="h-full outline-none"
               />
-          </Slate>
+            </Slate>
+          </div>
         </div>
       </div>
-              </div>
     );
   }
 );

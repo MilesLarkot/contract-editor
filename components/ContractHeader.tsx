@@ -106,11 +106,11 @@ export default function ContractHeader({
                 <Badge
                   key={tag}
                   variant="outline"
-                  className="gap-1 cursor-default"
+                  className="gap-1 cursor-default py-2"
                 >
                   {tag}
                   <X
-                    className="h-3 w-3 hover:opacity-70 cursor-pointer"
+                    className="h-3 w-3 hover:opacity-70 cursor-pointer hover:text-red-600"
                     onClick={() => removeTag(tag)}
                   />
                 </Badge>
