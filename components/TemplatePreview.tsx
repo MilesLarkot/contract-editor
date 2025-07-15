@@ -7,7 +7,7 @@ interface TemplatePreviewProps {
 
 function TemplatePreview({ title, content }: TemplatePreviewProps) {
   return (
-    <Card className="w-[200px] cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 group border-0 bg-gradient-to-br from-white to-gray-50/50 backdrop-blur-sm overflow-hidden relative">
+    <Card className="w-[200px] min-h-[200px] cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-2 transition-all duration-300 group border-0 bg-gradient-to-br from-white to-gray-50/50 backdrop-blur-sm overflow-hidden relative">
       <CardHeader className="pb-3 pt-6 px-6">
         <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors duration-300 text-lg leading-tight line-clamp-2">
           {title}

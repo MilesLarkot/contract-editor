@@ -29,7 +29,7 @@ interface FieldPickerProps {
   setFinalFields: (field: Field) => void;
   updateField: (field: { fieldName: string; fieldValue: string }) => void;
   initialFields: Field[];
-  content?: string; // Added content prop
+  content?: string;
   onFieldValueChange?: (fieldName: string, fieldValue: string) => void;
   isTemplate: boolean;
   onFieldsChange?: (fields: Field[]) => void;

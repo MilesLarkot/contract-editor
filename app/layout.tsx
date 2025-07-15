@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import {
+  SidebarProvider,
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
+  SidebarMenuButton,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Book, BookDashed } from "lucide-react";
 
@@ -32,45 +33,63 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SidebarProvider>
-          <Sidebar>
-            <SidebarContent>
-              <SidebarGroup className="bg-primary text-primary-foreground h-full">
-                <SidebarGroupLabel className="text-primary-foreground">
-                  Contract Editor
-                </SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <a href="/contracts/">
-                          <Book />
-                          <span>Contracts</span>
-                        </a>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton asChild>
-                        <a href="/templates/">
-                          <BookDashed />
-                          <span>Templates</span>
-                        </a>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            </SidebarContent>
-          </Sidebar>
-          <main className="flex-1">{children}</main>
+        <SidebarProvider /* defaultOpen | open | onOpenChange available */>
+          {/* side‑by‑side layout */}
+          <div className="flex min-h-screen w-full">
+            {/* 1️⃣ make it collapsible */}
+            <Sidebar collapsible="icon" /* "offcanvas" to slide in/out */>
+              <SidebarContent>
+                <SidebarGroup className="bg-primary text-primary-foreground h-full">
+                  <SidebarGroupLabel className="text-white">
+                    Contract Editor
+                  </SidebarGroupLabel>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton asChild>
+                          <a href="/contracts/">
+                            <Book />
+                            <span>Contracts</span>
+                          </a>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton asChild>
+                          <a href="/templates/">
+                            <BookDashed />
+                            <span>Templates</span>
+                          </a>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              </SidebarContent>
+            </Sidebar>
+
+            {/* main content */}
+            <main className="flex-1">
+              {/* 2️⃣ trigger – place it wherever you like */}
+              <header className="h-16 flex items-center border-b px-4 gap-2">
+                <SidebarTrigger className="md:hidden inline-flex" />
+                {/* default trigger */}
+                {/* or build your own:
+                    const { toggleSidebar } = useSidebar();
+                    <Button onClick={toggleSidebar}><Menu /></Button>
+                 */}
+              </header>
+
+              {children}
+            </main>
+          </div>
         </SidebarProvider>
       </body>
     </html>

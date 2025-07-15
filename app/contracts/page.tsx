@@ -56,7 +56,7 @@ export default function Page() {
       });
   }, [dialogOpen]);
 
-  const [isGridView, setIsGridView] = useState(true);
+  const [isGridView, setIsGridView] = useState(false);
 
   const createContractFromTemplate = async (template: Template) => {
     const contractData = convertTemplateToContract({
