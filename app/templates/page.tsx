@@ -28,7 +28,7 @@ export default function Page() {
           </BreadcrumbList>
           <Link href="/templates/new" className="ml-auto">
             <Button variant="default">
-              <CirclePlus /> New Template
+              <CirclePlus /> New
             </Button>
           </Link>
         </Breadcrumb>
