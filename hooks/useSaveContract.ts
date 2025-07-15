@@ -7,6 +7,7 @@ interface ContractData {
   fields: { id: number; fieldName: string; fieldValue: string }[];
   contractId: string | null;
   isTemplate: boolean;
+  tags?: string[];
 }
 
 interface SaveContractResult {
@@ -24,6 +25,7 @@ export function useSaveContract({
   fields,
   contractId: initialContractId,
   isTemplate,
+  tags,
 }: ContractData): SaveContractResult {
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
@@ -39,7 +41,13 @@ export function useSaveContract({
     }
     isSavingRef.current = true;
 
-    if (!title && !content && fields.length === 0 && !description) {
+    if (
+      !title &&
+      !content &&
+      fields.length === 0 &&
+      !description &&
+      (!isTemplate || !tags?.length)
+    ) {
       isSavingRef.current = false;
       return;
     }
@@ -58,6 +66,7 @@ export function useSaveContract({
           },
           {} as Record<string, string>
         ),
+        ...(isTemplate && tags ? { tags } : {}),
       };
 
       setIsSaving(true);
@@ -107,7 +116,7 @@ export function useSaveContract({
       setIsSaving(false);
       isSavingRef.current = false;
     }
-  }, [title, description, content, fields, contractId, isTemplate]);
+  }, [title, description, content, fields, contractId, isTemplate, tags]);
 
   return {
     saveContract,

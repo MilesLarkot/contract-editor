@@ -12,6 +12,7 @@ export function useContractData({
   setContractId,
   setIsLoading,
   setSaveError,
+  setTags,
 }: {
   id: string | null;
   isTemplate: boolean;
@@ -22,6 +23,7 @@ export function useContractData({
   setContractId: (id: string) => void;
   setIsLoading: (b: boolean) => void;
   setSaveError: (msg: string) => void;
+  setTags?: (tags: string[]) => void;
 }) {
   const fetchContractData = useCallback(async () => {
     if (!id) {
@@ -67,6 +69,9 @@ export function useContractData({
               )
             : []
         );
+        if (isTemplate && setTags) {
+          setTags(data.tags || []);
+        }
         setContractId(data.id || id);
       } else {
         const errorText = await response.text();
@@ -97,6 +102,7 @@ export function useContractData({
     setContractId,
     setIsLoading,
     setSaveError,
+    setTags,
   ]);
 
   return { fetchContractData };

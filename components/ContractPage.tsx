@@ -24,6 +24,7 @@ interface ContractData {
   description?: string;
   content?: string;
   fields?: Record<string, string>;
+  tags?: string[];
 }
 
 interface ContractPageProps {
@@ -62,6 +63,7 @@ export default function ContractPage({
   const [description, setDescription] = useState(
     contractData?.description || ""
   );
+  const [tags, setTags] = useState<string[]>(contractData?.tags || []);
   const [content, setContent] = useState(contractData?.content || "");
   const [contractId, setContractId] = useState<string | null>(id);
   const [localSaveError, setSaveError] = useState<string | null>(null);
@@ -79,6 +81,7 @@ export default function ContractPage({
     setContractId,
     setIsLoading,
     setSaveError,
+    setTags,
   });
 
   useLoadContract(id, fetchContractData, setIsLoading);
@@ -115,6 +118,7 @@ export default function ContractPage({
     fields,
     contractId,
     isTemplate,
+    tags,
   });
 
   const debouncedSaveRef = useDebouncedSave(saveContract, 2000);
@@ -133,7 +137,7 @@ export default function ContractPage({
     isLoading,
     triggerDebouncedSave,
     debouncedSaveRef,
-    deps: [title, description, content, fields, contractId],
+    deps: [title, description, content, fields, contractId, tags],
   });
 
   console.log(localSaveError);
@@ -158,6 +162,8 @@ export default function ContractPage({
           saveError={saveError}
           onTitleChange={setTitle}
           onDescriptionChange={setDescription}
+          onTagsChange={setTags}
+          tags={tags}
           onSubmit={handleSubmit}
         />
         <div className="space-x-2 ml-auto">

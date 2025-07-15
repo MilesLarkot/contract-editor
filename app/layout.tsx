@@ -14,6 +14,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Book, BookDashed } from "lucide-react";
+// import ReactScanProvider from "./_providers/ReactScanProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -77,6 +78,7 @@ export default function RootLayout({
               <header className="flex items-center border-b px-4 gap-2 ">
                 <SidebarTrigger className="md:hidden inline-flex" />
               </header>
+              {/* <ReactScanProvider /> */}
               {children}
             </main>
           </div>

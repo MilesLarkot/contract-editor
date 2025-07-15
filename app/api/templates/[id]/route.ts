@@ -10,7 +10,9 @@ export async function GET(
   { params }: { params: Params }
 ) {
   const template = await Template.findById(params.id)
-    .select("title content defaultFields metadata.description updatedAt")
+    .select(
+      "title content defaultFields metadata.description metadata.tags updatedAt"
+    )
     .lean();
   if (!template)
     return NextResponse.json({ error: "Template Not found" }, { status: 404 });
@@ -20,6 +22,7 @@ export async function GET(
     content: template.content,
     defaultFields: template.defaultFields,
     description: template.metadata?.description || "",
+    tags: template.metadata?.tags || [],
     updatedAt: template.updatedAt
       ? new Date(template.updatedAt).toISOString()
       : "",
@@ -36,6 +39,7 @@ export async function PATCH(
     content: body.content,
     defaultFields: body.defaultFields,
     "metadata.description": body.description,
+    "metadata.tags": body.tags,
   };
   const updated = await Template.findByIdAndUpdate(
     params.id,
@@ -44,7 +48,9 @@ export async function PATCH(
       new: true,
     }
   )
-    .select("title content defaultFields metadata.description updatedAt")
+    .select(
+      "title content defaultFields metadata.description metadata.tags updatedAt"
+    )
     .lean();
   if (!updated)
     return NextResponse.json({ error: "Template Not found" }, { status: 404 });
@@ -54,6 +60,7 @@ export async function PATCH(
     content: updated.content,
     defaultFields: updated.defaultFields,
     description: updated.metadata?.description || "",
+    tags: updated.metadata?.tags || [],
     updatedAt: updated.updatedAt
       ? new Date(updated.updatedAt).toISOString()
       : "",
