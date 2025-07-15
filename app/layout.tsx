@@ -41,11 +41,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SidebarProvider /* defaultOpen | open | onOpenChange available */>
-          {/* side‑by‑side layout */}
+        <SidebarProvider>
           <div className="flex min-h-screen w-full">
-            {/* 1️⃣ make it collapsible */}
-            <Sidebar collapsible="icon" /* "offcanvas" to slide in/out */>
+            <Sidebar collapsible="icon">
               <SidebarContent>
                 <SidebarGroup className="bg-primary text-primary-foreground h-full">
                   <SidebarGroupLabel className="text-white">
@@ -75,18 +73,10 @@ export default function RootLayout({
               </SidebarContent>
             </Sidebar>
 
-            {/* main content */}
             <main className="flex-1">
-              {/* 2️⃣ trigger – place it wherever you like */}
-              <header className="h-16 flex items-center border-b px-4 gap-2">
+              <header className="flex items-center border-b px-4 gap-2 ">
                 <SidebarTrigger className="md:hidden inline-flex" />
-                {/* default trigger */}
-                {/* or build your own:
-                    const { toggleSidebar } = useSidebar();
-                    <Button onClick={toggleSidebar}><Menu /></Button>
-                 */}
               </header>
-
               {children}
             </main>
           </div>
