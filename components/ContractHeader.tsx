@@ -106,7 +106,7 @@ export default function ContractHeader({
                 <Badge
                   key={tag}
                   variant="outline"
-                  className="gap-1 cursor-default py-2"
+                  className="gap-1 cursor-default py-0"
                 >
                   {tag}
                   <X

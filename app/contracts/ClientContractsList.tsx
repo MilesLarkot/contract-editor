@@ -24,7 +24,6 @@ interface Contract {
   fields?: Record<string, string>;
 }
 
-// Custom debounce hook
 function useDebounce<T extends (...args: string[]) => void>(
   callback: T,
   delay: number

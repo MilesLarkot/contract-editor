@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import ClientContractList from "./ClientContractsList";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -139,11 +139,22 @@ export default function Page() {
                   {isGridView ? (
                     <>
                       <Link href="/contracts/new">
+                        <div className="w-[200px] min-h-[200px] cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-2 hover:border-primary transition-all duration-300 group bg-gradient-to-br from-white to-gray-50/50 backdrop-blur-sm overflow-hidden relative border-dashed border-4 border-black rounded-2xl flex items-center justify-center gap-2 flex-col">
+                          <PlusCircle
+                            size={64}
+                            className="group-hover:text-primary transition-all"
+                          />
+                          <div className="group-hover:text-primary tranition-all text-center font-semibold">
+                            Create a contract from scratch
+                          </div>
+                        </div>
+                      </Link>
+                      {/* <Link href="/contracts/new">
                         <TemplatePreview
                           title="Blank contract"
                           content="Create a contract from scratch."
                         />
-                      </Link>
+                      </Link> */}
                       {templates.map((tpl) => (
                         <div
                           key={tpl._id}
@@ -158,12 +169,14 @@ export default function Page() {
                     </>
                   ) : (
                     <div className="flex items-start overflow-hidden w-full gap-4 flex-col">
-                      <Link href="/contracts/new">
-                        <div className="w-full cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:translate-x-2 transition-transform duration-300 group hover:border-l-4 pl-2 border-primary rounded">
-                          <p className="font-bold group-hover:text-primary transition-colors duration-300">
+                      <Link href="/contracts/new" className="w-full pr-2">
+                        <div className="w-full cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:translate-x-2 hover:border-primary transition-colors transition-transform duration-300 group hover:border-l-4 pl-2 border-primary border-dashed border-4 border-black rounded-2xl p-2">
+                          <p className="font-bold group-hover:text-primary transition-colors ">
                             Blank contract
                           </p>
-                          <small>Create a contract from scratch.</small>
+                          <small className="group-hover:text-primary transition-colors">
+                            Create a contract from scratch.
+                          </small>
                         </div>
                       </Link>
                       {templates.map((tpl) => (

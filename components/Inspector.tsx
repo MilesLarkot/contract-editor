@@ -32,7 +32,7 @@ function Inspector({
   const [activeTab, setActiveTab] = useState<TabType>("fields");
   return (
     <div
-      className={`fixed top-0 right-0 h-full w-[300px] border-l z-20 bg-white translate-x-full sm:translate-x-0 ${
+      className={`fixed top-0 right-0 h-full w-[300px] border-l z-20 bg-white  sm:translate-x-0 ${
         isActive ? "translate-x-0" : "translate-x-full"
       } flex transition-transform`}
     >
