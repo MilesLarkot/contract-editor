@@ -170,7 +170,7 @@ export default function Page() {
                   ) : (
                     <div className="flex items-start overflow-hidden w-full gap-4 flex-col">
                       <Link href="/contracts/new" className="w-full pr-2">
-                        <div className="w-full cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:translate-x-2 hover:border-primary transition-colors transition-transform duration-300 group hover:border-l-4 pl-2 border-primary border-dashed border-4 border-black rounded-2xl p-2">
+                        <div className="w-full cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:translate-x-2 hover:border-primary transition-all duration-300 group pl-2 border-dashed border-2 border-black rounded-2xl p-2">
                           <p className="font-bold group-hover:text-primary transition-colors ">
                             Blank contract
                           </p>
