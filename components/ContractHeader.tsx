@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ExportButton from "./ExportButton";
-import { PlusCircle, X } from "lucide-react";
+import { X } from "lucide-react";
 import React from "react";
 import { Badge } from "./ui/badge";
 
@@ -98,10 +98,6 @@ export default function ContractHeader({
                 placeholder="New tag…"
                 className="flex-1 rounded-lg border px-2 py-1 text-sm max-w-[100px]"
               />
-              <Button size="sm" variant="outline" onClick={addTag}>
-                <PlusCircle className="mr-1 h-4 w-4" />
-                Add tag
-              </Button>
               {tags.map((tag) => (
                 <Badge
                   key={tag}
