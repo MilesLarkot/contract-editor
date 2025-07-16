@@ -175,7 +175,7 @@ export default function ClientTemplatesList() {
                         </span>
                       </TooltipTrigger>
                       {template.description && (
-                        <TooltipContent className="bg-white max-w-xs">
+                        <TooltipContent className="bg-white border max-w-xs text-black">
                           {template.description}
                         </TooltipContent>
                       )}
@@ -186,7 +186,7 @@ export default function ClientTemplatesList() {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="flex flex-wrap items-center gap-1">
+                        <div className="flex flex-wrap items-center gap-1 ">
                           {template.tags && template.tags.length > 0 ? (
                             <>
                               {template.tags.slice(0, 2).map((tag) => (
@@ -210,7 +210,7 @@ export default function ClientTemplatesList() {
                         </div>
                       </TooltipTrigger>
                       {template.tags && template.tags.length > 0 && (
-                        <TooltipContent className="bg-white">
+                        <TooltipContent className="bg-white max-w-xs border">
                           <div className="flex flex-wrap gap-1">
                             {template.tags.map((tag) => (
                               <Badge key={tag} variant="outline">
