@@ -36,7 +36,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { AlignCenter, AlignJustify, AlignLeft, AlignRight } from "lucide-react";
+import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
+  Code,
+  Heading1,
+  Heading2,
+  Heading3,
+  Heading4,
+  Heading5,
+  Heading6,
+  Pilcrow,
+  Quote,
+} from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@radix-ui/react-toggle-group";
+import WYSIWYGToolbar from "./WYSIWYGToolbar";
 
 interface FieldElement {
   type: "field";
@@ -763,304 +779,17 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
       }
     };
 
+    // const getCurrentAlignment = (editor) => {
+    //   if (isBlockActive(editor, "left", "align")) return "left";
+    //   if (isBlockActive(editor, "center", "align")) return "center";
+    //   if (isBlockActive(editor, "right", "align")) return "right";
+    //   if (isBlockActive(editor, "justify", "align")) return "justify";
+    //   return "left";
+    // };
+
     return (
       <div>
-        <div className="border-b bg-gray-50 p-3 min-h-fit sticky top-16 z-10 max-h-[100px] overflow-scroll">
-          <div className="flex flex-wrap items-center gap-2">
-            <Select
-              value={
-                isBlockActive(editor, "heading")
-                  ? `heading-${
-                      (
-                        Editor.nodes(editor, {
-                          match: (n) =>
-                            !Editor.isEditor(n) &&
-                            SlateElement.isElement(n) &&
-                            n.type === "heading",
-                        }).next().value?.[0] as HeadingElement
-                      )?.level || 1
-                    }`
-                  : isBlockActive(editor, "block-quote")
-                  ? "block-quote"
-                  : isBlockActive(editor, "code-block")
-                  ? "code-block"
-                  : "paragraph"
-              }
-              onValueChange={(value) => {
-                if (value.startsWith("heading-")) {
-                  const level = parseInt(value.split("-")[1]) as
-                    | 1
-                    | 2
-                    | 3
-                    | 4
-                    | 5
-                    | 6;
-                  Transforms.setNodes(editor, { type: "heading", level });
-                } else {
-                  toggleBlock(editor, value);
-                }
-              }}
-            >
-              <SelectTrigger className="w-36 h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="paragraph">Paragraph</SelectItem>
-                <SelectItem value="heading-1">Heading 1</SelectItem>
-                <SelectItem value="heading-2">Heading 2</SelectItem>
-                <SelectItem value="heading-3">Heading 3</SelectItem>
-                <SelectItem value="heading-4">Heading 4</SelectItem>
-                <SelectItem value="heading-5">Heading 5</SelectItem>
-                <SelectItem value="heading-6">Heading 6</SelectItem>
-                <SelectItem value="block-quote">Quote</SelectItem>
-                <SelectItem value="code-block">Code Block</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Separator orientation="vertical" className="h-6 mx-1" />
-
-            <FontSizeSelect
-              value={getMarkValue(editor, "fontSize") as string}
-              onChange={(size) => setMark(editor, "fontSize", size)}
-            />
-
-            <Separator orientation="vertical" className="h-6 mx-1" />
-
-            <Button
-              variant={isMarkActive(editor, "bold") ? "default" : "outline"}
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleMark(editor, "bold");
-              }}
-              title="Bold"
-            >
-              <strong>B</strong>
-            </Button>
-
-            <Button
-              variant={isMarkActive(editor, "italic") ? "default" : "outline"}
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleMark(editor, "italic");
-              }}
-              title="Italic"
-            >
-              <em>I</em>
-            </Button>
-
-            <Button
-              variant={
-                isMarkActive(editor, "underline") ? "default" : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleMark(editor, "underline");
-              }}
-              title="Underline"
-            >
-              <u>U</u>
-            </Button>
-
-            <Button
-              variant={
-                isMarkActive(editor, "strikethrough") ? "default" : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleMark(editor, "strikethrough");
-              }}
-              title="Strikethrough"
-            >
-              <s>S</s>
-            </Button>
-
-            <Button
-              variant={isMarkActive(editor, "code") ? "default" : "outline"}
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleMark(editor, "code");
-              }}
-              title="Inline Code"
-            >
-              &lt;/&gt;
-            </Button>
-
-            <Button
-              variant={
-                isMarkActive(editor, "superscript") ? "default" : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                if (isMarkActive(editor, "subscript")) {
-                  toggleMark(editor, "subscript");
-                }
-                toggleMark(editor, "superscript");
-              }}
-              title="Superscript"
-            >
-              X<sup>2</sup>
-            </Button>
-
-            <Button
-              variant={
-                isMarkActive(editor, "subscript") ? "default" : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                if (isMarkActive(editor, "superscript")) {
-                  toggleMark(editor, "superscript");
-                }
-                toggleMark(editor, "subscript");
-              }}
-              title="Subscript"
-            >
-              X<sub>2</sub>
-            </Button>
-
-            <Separator orientation="vertical" className="h-6 mx-1" />
-
-            <ColorPicker
-              value={getMarkValue(editor, "color") as string}
-              onChange={(color) => setMark(editor, "color", color)}
-              title="Text"
-            />
-
-            <ColorPicker
-              value={getMarkValue(editor, "backgroundColor") as string}
-              onChange={(color) => setMark(editor, "backgroundColor", color)}
-              title="Background"
-            />
-
-            <Separator orientation="vertical" className="h-6 mx-1" />
-
-            <Button
-              variant={
-                isBlockActive(editor, "left", "align") ? "default" : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleBlock(editor, "left");
-              }}
-              title="Align Left"
-            >
-              <AlignLeft />
-            </Button>
-
-            <Button
-              variant={
-                isBlockActive(editor, "center", "align") ? "default" : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleBlock(editor, "center");
-              }}
-              title="Align Center"
-            >
-              <AlignCenter />
-            </Button>
-
-            <Button
-              variant={
-                isBlockActive(editor, "right", "align") ? "default" : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleBlock(editor, "right");
-              }}
-              title="Align Right"
-            >
-              <AlignRight />
-            </Button>
-
-            <Button
-              variant={
-                isBlockActive(editor, "justify", "align")
-                  ? "default"
-                  : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleBlock(editor, "justify");
-              }}
-              title="Justify"
-            >
-              <AlignJustify />
-            </Button>
-
-            <Separator orientation="vertical" className="h-6 mx-1" />
-
-            <Button
-              variant={
-                isBlockActive(editor, "bulleted-list") ? "default" : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleBlock(editor, "bulleted-list");
-              }}
-              title="Bulleted List"
-            >
-              • List
-            </Button>
-
-            <Button
-              variant={
-                isBlockActive(editor, "numbered-list") ? "default" : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleBlock(editor, "numbered-list");
-              }}
-              title="Numbered List"
-            >
-              1. List
-            </Button>
-
-            <Separator orientation="vertical" className="h-6 mx-1" />
-
-            <Button
-              variant={isLinkActive(editor) ? "default" : "outline"}
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                if (isLinkActive(editor)) {
-                  unwrapLink(editor);
-                } else {
-                  addLinkWithPrompt();
-                }
-              }}
-              title={isLinkActive(editor) ? "Remove Link" : "Add Link"}
-            >
-              🔗
-            </Button>
-
-            <Button
-              variant={
-                isBlockActive(editor, "block-quote") ? "default" : "outline"
-              }
-              size="sm"
-              onMouseDown={(event) => {
-                event.preventDefault();
-                toggleBlock(editor, "block-quote");
-              }}
-              title="Block Quote"
-            >
-              ❝
-            </Button>
-          </div>
-        </div>
+        <WYSIWYGToolbar editor={editor} />
         <div className="border rounded min-h-fit">
           <div
             onDragOver={handleDragOver}
