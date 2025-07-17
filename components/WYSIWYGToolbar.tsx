@@ -340,8 +340,8 @@ const WYSIWYGToolbar = ({ editor }: WYSIWYGToolbarProps) => {
         onClick={toggleToolbar}
         className={`rounded-full h-12 w-12 shadow-lg hover:shadow-xl transition-all duration-300 ${
           isExpanded
-            ? "bg-blue-600 hover:bg-blue-700 text-white"
-            : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
+            ? "bg-primary  text-white"
+            : "bg-white hover:bg-primary hover:text-primary-foreground text-gray-700 border border-gray-200"
         }`}
         title={isExpanded ? "Collapse toolbar" : "Expand toolbar"}
       >

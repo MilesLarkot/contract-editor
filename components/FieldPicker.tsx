@@ -297,7 +297,7 @@ function FieldPicker({
               }
             >
               <div className="mr-2 p-1">
-                <div className="bg-blue-500 rounded-xl p-1">
+                <div className="bg-primary rounded-xl p-1">
                   <LetterText size={16} className="text-white" />
                 </div>
               </div>

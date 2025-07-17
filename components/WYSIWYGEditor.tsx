@@ -549,7 +549,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
               <span
                 {...attributes}
                 contentEditable={false}
-                className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded mx-1"
+                className="inline-block bg-primary text-primary-foreground px-2 py-1 rounded mx-1="
               >
                 {isEditing ? (
                   <input
