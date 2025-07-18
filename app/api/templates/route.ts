@@ -2,13 +2,55 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Template from "@/models/template";
 
+// Define interface for defaultFields structure
+interface DefaultField {
+  value: string;
+  mapping?: string;
+}
+
+// Define interface for the request body
+interface TemplateRequestBody {
+  title?: string;
+  content?: string;
+  defaultFields?: Record<string, DefaultField>;
+  description?: string;
+  metadata?: { category?: string };
+  tags?: string[];
+}
+
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const body = await req.json();
+    const body = (await req.json()) as TemplateRequestBody;
+
+    // Validate content
+    if (body.content === undefined || body.content === null) {
+      return NextResponse.json(
+        { error: "Content is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate defaultFields mappings
+    if (body.defaultFields) {
+      for (const [key, field] of Object.entries(body.defaultFields)) {
+        if (
+          field.mapping &&
+          !/^[a-zA-Z0-9]+\.[a-zA-Z0-9]+$/.test(field.mapping)
+        ) {
+          return NextResponse.json(
+            {
+              error: `Invalid mapping format for field "${key}". Expected "party.property".`,
+            },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     const template = await Template.create({
       title: body.title || "Untitled Template",
-      content: body.content || "",
+      content: body.content, // Use body.content directly, as it's validated
       defaultFields: body.defaultFields || {},
       metadata: {
         description: body.description || "",

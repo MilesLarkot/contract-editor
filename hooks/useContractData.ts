@@ -1,6 +1,21 @@
 import { useCallback } from "react";
 
-type Field = { id: number; fieldName: string; fieldValue: any };
+interface Field {
+  id: number;
+  fieldName: string;
+  fieldValue: string;
+  mapping?: string;
+}
+
+interface ContractData {
+  id?: string;
+  title?: string;
+  description?: string;
+  content?: string;
+  defaultFields?: Record<string, { value: string; mapping?: string }>;
+  fields?: Record<string, string>;
+  tags?: string[];
+}
 
 export function useContractData({
   id,
@@ -46,29 +61,61 @@ export function useContractData({
       );
 
       if (response.ok) {
-        const data = await response.json();
-        setTitle(data.title || "");
-        setDescription(data.description || "");
-        setContent(data.content || "");
-        setFields(
+        const data: ContractData = await response.json();
+        console.log("Fetched contractData:", JSON.stringify(data, null, 2)); // Debug fetched data
+
+        const validatedFields: Field[] =
           isTemplate && data.defaultFields
             ? Object.entries(data.defaultFields).map(
-                ([fieldName, fieldValue], index) => ({
-                  id: index,
-                  fieldName,
-                  fieldValue: fieldValue || "",
-                })
+                ([fieldName, field], index) => {
+                  const fieldValue =
+                    typeof field.value === "string" ? field.value : "";
+                  if (typeof field.value !== "string") {
+                    console.error(
+                      `Invalid fieldValue for ${fieldName}:`,
+                      field.value,
+                      "Using empty string"
+                    );
+                  }
+                  return {
+                    id: index,
+                    fieldName,
+                    fieldValue,
+                    mapping: field.mapping || "",
+                  };
+                }
               )
             : data.fields
             ? Object.entries(data.fields).map(
-                ([fieldName, fieldValue], index) => ({
-                  id: index,
-                  fieldName,
-                  fieldValue: fieldValue || "",
-                })
+                ([fieldName, fieldValue], index) => {
+                  const value =
+                    typeof fieldValue === "string" ? fieldValue : "";
+                  if (typeof fieldValue !== "string") {
+                    console.error(
+                      `Invalid fieldValue for ${fieldName}:`,
+                      fieldValue,
+                      "Using empty string"
+                    );
+                  }
+                  return {
+                    id: index,
+                    fieldName,
+                    fieldValue: value,
+                    mapping: data.defaultFields?.[fieldName]?.mapping || "",
+                  };
+                }
               )
-            : []
-        );
+            : [];
+
+        console.log(
+          "Validated fields:",
+          JSON.stringify(validatedFields, null, 2)
+        ); // Debug transformed fields
+
+        setTitle(data.title || "");
+        setDescription(data.description || "");
+        setContent(data.content || "");
+        setFields(validatedFields);
         if (isTemplate && setTags) {
           setTags(data.tags || []);
         }

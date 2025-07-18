@@ -4,7 +4,7 @@ export interface TemplateDocument extends mongoose.Document {
   _id: mongoose.Schema.Types.ObjectId;
   title: string;
   content: string;
-  defaultFields: Record<string, string>;
+  defaultFields: Record<string, { value: string; mapping?: string }>;
   metadata?: {
     category?: string;
     description?: string;
@@ -20,7 +20,10 @@ const TemplateSchema = new mongoose.Schema<TemplateDocument>(
     content: { type: String, required: true },
     defaultFields: {
       type: mongoose.Schema.Types.Map,
-      of: String,
+      of: new mongoose.Schema({
+        value: { type: String, default: "" },
+        mapping: { type: String, default: "" },
+      }),
       default: {},
     },
     metadata: {

@@ -13,7 +13,6 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
-
 import {
   Dialog,
   DialogContent,
@@ -32,7 +31,7 @@ interface Template {
   content: string;
   description: string;
   updatedAt: string;
-  defaultFields?: Record<string, string>;
+  defaultFields?: Record<string, { value: string; mapping?: string }>;
 }
 
 export default function Page() {
@@ -59,22 +58,43 @@ export default function Page() {
   const [isGridView, setIsGridView] = useState(false);
 
   const createContractFromTemplate = async (template: Template) => {
-    const contractData = convertTemplateToContract({
-      _id: template._id,
-      title: template.title,
-      content: template.content,
-      defaultFields: new Map(Object.entries(template.defaultFields || {})),
-      metadata: { category: undefined, description: template.description },
-    });
-
     try {
+      const defaultFieldsMap = new Map(
+        Object.entries(template.defaultFields || {}).map(([key, field]) => [
+          key,
+          field.value || "",
+        ])
+      );
+      console.log(
+        "Template defaultFields:",
+        JSON.stringify(Array.from(defaultFieldsMap.entries()), null, 2)
+      ); // Debug
+
+      const contractData = convertTemplateToContract({
+        _id: template._id,
+        title: template.title,
+        content: template.content,
+        defaultFields: defaultFieldsMap,
+        metadata: { category: undefined, description: template.description },
+      });
+
+      console.log("Contract data:", JSON.stringify(contractData, null, 2)); // Debug
+
+      if (!(contractData.fields instanceof Map)) {
+        console.error("contractData.fields is not a Map:", contractData.fields);
+        throw new Error("Invalid fields format: fields must be a Map");
+      }
+
+      const fieldsObject = Object.fromEntries(contractData.fields);
+      console.log("Fields for API:", JSON.stringify(fieldsObject, null, 2)); // Debug
+
       const res = await fetch("/api/contracts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: contractData.title,
           content: contractData.content,
-          fields: Object.fromEntries(contractData.fields),
+          fields: fieldsObject,
           templateId: contractData.templateId,
           metadata: contractData.metadata,
         }),
@@ -149,12 +169,6 @@ export default function Page() {
                           </div>
                         </div>
                       </Link>
-                      {/* <Link href="/contracts/new">
-                        <TemplatePreview
-                          title="Blank contract"
-                          content="Create a contract from scratch."
-                        />
-                      </Link> */}
                       {templates.map((tpl) => (
                         <div
                           key={tpl._id}

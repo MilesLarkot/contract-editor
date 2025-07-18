@@ -6,8 +6,8 @@ import {
   LetterText,
   Ellipsis,
   Copy,
-  Settings,
   Trash,
+  Map as MapIcon,
 } from "lucide-react";
 import { Input } from "./ui/input";
 import {
@@ -23,11 +23,13 @@ interface Field {
   id: number;
   fieldName: string;
   fieldValue: string;
+  mapping?: string;
 }
 
 interface FieldPickerProps {
   setFinalFields: (field: Field) => void;
   updateField: (field: { fieldName: string; fieldValue: string }) => void;
+  deleteField: (fieldId: number) => void;
   initialFields: Field[];
   content?: string;
   onFieldValueChange?: (fieldName: string, fieldValue: string) => void;
@@ -38,6 +40,7 @@ interface FieldPickerProps {
 function FieldPicker({
   setFinalFields,
   updateField,
+  deleteField,
   initialFields,
   content,
   onFieldValueChange,
@@ -46,6 +49,11 @@ function FieldPicker({
 }: FieldPickerProps) {
   const [fields, setFields] = useState<Field[]>(initialFields);
   const [nameErrors, setNameErrors] = useState<Map<number, string>>(new Map());
+  const [editingMappingFieldId, setEditingMappingFieldId] = useState<
+    number | null
+  >(null);
+  const [tempParty, setTempParty] = useState<string>("");
+  const [tempProperty, setTempProperty] = useState<string>("");
 
   const sortedFields = [...fields].sort((a, b) => {
     if (!a.fieldName.trim() && !b.fieldName.trim()) return 0;
@@ -69,6 +77,7 @@ function FieldPicker({
                 id: Date.now() + Math.random(),
                 fieldName: node.fieldName,
                 fieldValue: node.fieldValue || "",
+                mapping: node.mapping || "",
               });
             }
             if (node.children) {
@@ -87,22 +96,18 @@ function FieldPicker({
     []
   );
 
-  // Effect to sync fields from content
   useEffect(() => {
     const contentFields = extractFieldsFromContent(content);
     const existingFieldNames = new Set(fields.map((f) => f.fieldName.trim()));
 
-    // Find fields in content that don't exist in current fields
     const missingFields = contentFields.filter(
       (field) =>
         field.fieldName && !existingFieldNames.has(field.fieldName.trim())
     );
 
     if (missingFields.length > 0) {
-      // Add missing fields to state
       setFields((prev) => {
         const newFields = [...prev, ...missingFields];
-        // Update parent component with new fields
         missingFields.forEach((field) => setFinalFields(field));
         return newFields;
       });
@@ -164,13 +169,26 @@ function FieldPicker({
   }, [onFieldValueChange]);
 
   const addFields = useCallback(() => {
-    const newField = { id: Date.now(), fieldName: "", fieldValue: "" };
+    const newField = {
+      id: Date.now(),
+      fieldName: "",
+      fieldValue: "",
+      mapping: "",
+    };
     setFields((prev) => [...prev, newField]);
     setFinalFields(newField);
   }, [setFinalFields]);
 
   const handleFieldUpdate = useCallback(
     (updatedField: Field) => {
+      console.log("FieldPicker handleFieldUpdate:", updatedField); // Debug fieldValue
+      if (typeof updatedField.fieldValue !== "string") {
+        console.error(
+          "FieldPicker: fieldValue is not a string:",
+          updatedField.fieldValue
+        );
+        return;
+      }
       setFields((prev) =>
         prev.map((f) => (f.id === updatedField.id ? updatedField : f))
       );
@@ -185,6 +203,25 @@ function FieldPicker({
     [updateField, nameErrors]
   );
 
+  const handleMappingChange = useCallback(
+    (fieldId: number, party: string, property: string) => {
+      const mapping = party && property ? `${party}.${property}` : "";
+      setFields((prev) =>
+        prev.map((f) => (f.id === fieldId ? { ...f, mapping } : f))
+      );
+      setFinalFields({
+        id: fieldId,
+        fieldName: fields.find((f) => f.id === fieldId)?.fieldName || "",
+        fieldValue: fields.find((f) => f.id === fieldId)?.fieldValue || "",
+        mapping,
+      });
+      setEditingMappingFieldId(null);
+      setTempParty("");
+      setTempProperty("");
+    },
+    [setFinalFields, fields]
+  );
+
   const handleDragStart = useCallback(
     (e: React.DragEvent<HTMLDivElement>, field: Field) => {
       e.dataTransfer.setData(
@@ -192,6 +229,7 @@ function FieldPicker({
         JSON.stringify({
           fieldName: field.fieldName.trim(),
           fieldValue: field.fieldValue,
+          mapping: field.mapping,
         })
       );
       e.dataTransfer.effectAllowed = "move";
@@ -224,8 +262,40 @@ function FieldPicker({
     [fields, setFinalFields]
   );
 
-  const deleteField = useCallback((fieldId: number) => {
-    setFields((prev) => prev.filter((f) => f.id !== fieldId));
+  const deleteFieldCallback = useCallback(
+    (fieldId: number) => {
+      setFields((prev) => prev.filter((f) => f.id !== fieldId));
+      deleteField(fieldId);
+      if (editingMappingFieldId === fieldId) {
+        setEditingMappingFieldId(null);
+        setTempParty("");
+        setTempProperty("");
+      }
+    },
+    [deleteField, editingMappingFieldId]
+  );
+
+  const startEditingMapping = useCallback(
+    (fieldId: number, currentMapping: string, event: React.MouseEvent) => {
+      event.stopPropagation();
+      event.preventDefault();
+      setEditingMappingFieldId(fieldId);
+      if (currentMapping) {
+        const [party, property] = currentMapping.split(".");
+        setTempParty(party || "");
+        setTempProperty(property || "");
+      } else {
+        setTempParty("");
+        setTempProperty("");
+      }
+    },
+    []
+  );
+
+  const cancelEditingMapping = useCallback(() => {
+    setEditingMappingFieldId(null);
+    setTempParty("");
+    setTempProperty("");
   }, []);
 
   const hasEmptyFieldNames = fields.some((f) => f.fieldName.trim() === "");
@@ -280,7 +350,7 @@ function FieldPicker({
         `}</style>
         {sortedFields.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
-            <p>No fields yet. Click &quot;Add Fields&quot; to get started.</p>
+            <p>No fields yet. Click "Add Fields" to get started.</p>
           </div>
         ) : (
           sortedFields.map((field) => (
@@ -329,10 +399,10 @@ function FieldPicker({
                   onChange={(e) =>
                     handleFieldUpdate({ ...field, fieldValue: e.target.value })
                   }
-                  disabled={nameErrors.has(field.id) || isTemplate}
+                  disabled={nameErrors.has(field.id)}
                   title={
-                    isTemplate
-                      ? "Field values are disabled in template mode"
+                    nameErrors.has(field.id)
+                      ? "Resolve field name errors to edit value"
                       : ""
                   }
                 />
@@ -350,10 +420,95 @@ function FieldPicker({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-50" align="start">
                   <DropdownMenuGroup className="space-y-1 p-1">
-                    <DropdownMenuItem className="flex items-center gap-2 p-1 outline-none cursor-pointer hover:bg-blue-50 rounded hover:text-blue-600">
-                      <Settings size={16} />
-                      Properties
-                    </DropdownMenuItem>
+                    {isTemplate && (
+                      <>
+                        <DropdownMenuItem
+                          className="flex items-center gap-2 p-1 outline-none cursor-pointer hover:bg-blue-50 rounded hover:text-blue-600"
+                          onClick={(e) =>
+                            startEditingMapping(
+                              field.id,
+                              field.mapping || "",
+                              e
+                            )
+                          }
+                        >
+                          <MapIcon size={16} />
+                          Mapping {field.mapping ? `(${field.mapping})` : ""}
+                        </DropdownMenuItem>
+                        {editingMappingFieldId === field.id && (
+                          <div className="p-2">
+                            <Input
+                              placeholder="Party (e.g., partyA)"
+                              value={tempParty}
+                              onChange={(e) => setTempParty(e.target.value)}
+                              disabled={nameErrors.has(field.id)}
+                              title={
+                                nameErrors.has(field.id)
+                                  ? "Resolve field name errors to edit mapping"
+                                  : "Enter the party for this field"
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  handleMappingChange(
+                                    field.id,
+                                    tempParty,
+                                    tempProperty
+                                  );
+                                } else if (e.key === "Escape") {
+                                  cancelEditingMapping();
+                                }
+                              }}
+                              className="mb-2"
+                            />
+                            <Input
+                              placeholder="Property (e.g., name)"
+                              value={tempProperty}
+                              onChange={(e) => setTempProperty(e.target.value)}
+                              disabled={nameErrors.has(field.id)}
+                              title={
+                                nameErrors.has(field.id)
+                                  ? "Resolve field name errors to edit mapping"
+                                  : "Enter the property for this field"
+                              }
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  handleMappingChange(
+                                    field.id,
+                                    tempParty,
+                                    tempProperty
+                                  );
+                                } else if (e.key === "Escape") {
+                                  cancelEditingMapping();
+                                }
+                              }}
+                            />
+                            <div className="flex gap-2 mt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleMappingChange(
+                                    field.id,
+                                    tempParty,
+                                    tempProperty
+                                  )
+                                }
+                                disabled={nameErrors.has(field.id)}
+                              >
+                                Save
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={cancelEditingMapping}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
                     <DropdownMenuItem
                       className="flex items-center gap-2 p-1 outline-none cursor-pointer hover:bg-blue-50 rounded hover:text-blue-600"
                       onClick={() => duplicateField(field)}
@@ -363,7 +518,7 @@ function FieldPicker({
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="flex items-center gap-2 p-1 outline-none cursor-pointer hover:bg-red-50 rounded hover:text-red-600"
-                      onClick={() => deleteField(field.id)}
+                      onClick={() => deleteFieldCallback(field.id)}
                     >
                       <Trash size={16} />
                       Delete field

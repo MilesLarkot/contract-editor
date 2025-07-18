@@ -18,22 +18,24 @@ interface TemplateData {
   id: string;
   title: string;
   content: string;
-  fields: Record<string, string>;
+  defaultFields: Record<string, { value: string; mapping?: string }>;
 }
 
 async function fetchTemplate(id: string): Promise<TemplateData | null> {
   await connectDB();
   try {
     const template = await Template.findById(id)
-      .select("title content fields")
+      .select("title content defaultFields")
       .lean();
     if (!template) return null;
+
+    console.log("Fetched template:", JSON.stringify(template, null, 2)); // Debug
 
     return {
       id: template._id.toString(),
       title: template.title,
       content: template.content,
-      fields: template.defaultFields,
+      defaultFields: template.defaultFields || {},
     };
   } catch (err) {
     console.error("Error fetching template:", err);
@@ -48,7 +50,7 @@ export default async function TemplateEditPage({
 }) {
   const templateData = await fetchTemplate(params.id);
   if (!templateData) {
-    return notFound(); // ← RETURN THIS
+    return notFound();
   }
 
   return (

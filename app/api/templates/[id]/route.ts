@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import Template from "@/models/template";
 
+// Define interface for defaultFields structure
+interface DefaultField {
+  value: string;
+  mapping?: string;
+}
+
+// Define interface for the request body
+interface TemplateRequestBody {
+  title?: string;
+  content?: string;
+  defaultFields?: Record<string, DefaultField>;
+  description?: string;
+  tags?: string[];
+}
+
 interface Params {
   id: string;
 }
@@ -33,7 +48,25 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Params }
 ) {
-  const body = await request.json();
+  const body = (await request.json()) as TemplateRequestBody;
+
+  // Validate defaultFields mappings
+  if (body.defaultFields) {
+    for (const [key, field] of Object.entries(body.defaultFields)) {
+      if (
+        field.mapping &&
+        !/^[a-zA-Z0-9]+\.[a-zA-Z0-9]+$/.test(field.mapping)
+      ) {
+        return NextResponse.json(
+          {
+            error: `Invalid mapping format for field "${key}". Expected "party.property".`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+  }
+
   const updateData = {
     title: body.title,
     content: body.content,

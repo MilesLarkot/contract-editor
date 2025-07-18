@@ -18,7 +18,7 @@ import { Switch } from "./ui/switch";
 import PreviewPDF from "./PreviewPDF";
 
 interface ContractData {
-  defaultFields?: Record<string, string>;
+  defaultFields?: Record<string, { value: string; mapping?: string }>;
   id?: string;
   title?: string;
   description?: string;
@@ -39,26 +39,50 @@ export default function ContractPage({
   const params = useParams();
   const id = params?.id === "new" ? null : (params?.id as string | null);
   const [fields, setFields] = useState<
-    { id: number; fieldName: string; fieldValue: string }[]
-  >(
-    isTemplate && contractData?.defaultFields
-      ? Object.entries(contractData.defaultFields).map(
-          ([fieldName, fieldValue], index) => ({
+    { id: number; fieldName: string; fieldValue: string; mapping?: string }[]
+  >(() => {
+    console.log("Initial contractData:", JSON.stringify(contractData, null, 2)); // Debug initial data
+    if (isTemplate && contractData?.defaultFields) {
+      return Object.entries(contractData.defaultFields).map(
+        ([fieldName, field], index) => {
+          const fieldValue = typeof field.value === "string" ? field.value : "";
+          if (typeof field.value !== "string") {
+            console.error(
+              `Invalid fieldValue for ${fieldName}:`,
+              field.value,
+              "Using empty string"
+            );
+          }
+          return {
             id: index,
             fieldName,
             fieldValue,
-          })
-        )
-      : contractData?.fields
-      ? Object.entries(contractData.fields).map(
-          ([fieldName, fieldValue], index) => ({
+            mapping: field.mapping || "",
+          };
+        }
+      );
+    } else if (contractData?.fields) {
+      return Object.entries(contractData.fields).map(
+        ([fieldName, fieldValue], index) => {
+          const value = typeof fieldValue === "string" ? fieldValue : "";
+          if (typeof fieldValue !== "string") {
+            console.error(
+              `Invalid fieldValue for ${fieldName}:`,
+              fieldValue,
+              "Using empty string"
+            );
+          }
+          return {
             id: index,
             fieldName,
-            fieldValue,
-          })
-        )
-      : []
-  );
+            fieldValue: value,
+            mapping: contractData.defaultFields?.[fieldName]?.mapping || "",
+          };
+        }
+      );
+    }
+    return [];
+  });
   const [title, setTitle] = useState(contractData?.title || "");
   const [description, setDescription] = useState(
     contractData?.description || ""
@@ -90,6 +114,7 @@ export default function ContractPage({
     id: number;
     fieldName: string;
     fieldValue: string;
+    mapping?: string;
   }) => {
     setFields((prev) => {
       if (
@@ -105,13 +130,29 @@ export default function ContractPage({
   const updateField = (updatedField: {
     fieldName: string;
     fieldValue: string;
+    mapping?: string;
   }) => {
+    console.log("Updating field:", updatedField);
+    if (typeof updatedField.fieldValue !== "string") {
+      console.error("fieldValue is not a string:", updatedField.fieldValue);
+      return;
+    }
     setFields((prev) => updateFieldsState(prev, updatedField));
     syncEditorField(editorRef, updatedField);
     setContent((prev) => updateContentJson(prev, updatedField));
   };
 
-  const { saveContract, isSaving, lastSaved, saveError } = useSaveContract({
+  const deleteField = (fieldId: number) => {
+    setFields((prev) => prev.filter((f) => f.id !== fieldId));
+  };
+
+  const {
+    saveContract,
+    isSaving,
+    lastSaved,
+    saveError,
+    // setContractId: setSaveContractId,
+  } = useSaveContract({
     title,
     description,
     content,
@@ -124,12 +165,17 @@ export default function ContractPage({
   const debouncedSaveRef = useDebouncedSave(saveContract, 2000);
 
   const triggerDebouncedSave = useCallback(() => {
+    console.log(
+      "Triggering save with fields:",
+      JSON.stringify(fields, null, 2)
+    );
     debouncedSaveRef.current?.();
-  }, []);
+  }, [fields]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     debouncedSaveRef.current?.cancel();
+    console.log("Manual save with fields:", JSON.stringify(fields, null, 2));
     await saveContract();
   };
 
@@ -194,6 +240,7 @@ export default function ContractPage({
       <Inspector
         addField={addField}
         updateField={updateField}
+        deleteField={deleteField}
         initialFields={fields}
         content={content}
         isActive={isActive}

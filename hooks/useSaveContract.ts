@@ -1,10 +1,17 @@
 import { useCallback, useRef, useState } from "react";
 
+interface ContractField {
+  id: number;
+  fieldName: string;
+  fieldValue: string;
+  mapping?: string;
+}
+
 interface ContractData {
   title: string;
   description: string;
   content: string;
-  fields: { id: number; fieldName: string; fieldValue: string }[];
+  fields: ContractField[];
   contractId: string | null;
   isTemplate: boolean;
   tags?: string[];
@@ -49,25 +56,46 @@ export function useSaveContract({
       (!isTemplate || !tags?.length)
     ) {
       isSavingRef.current = false;
+      setSaveError("No data to save");
       return;
     }
 
     try {
+      // Log fields to debug [object Object]
+      console.log("Fields before save:", JSON.stringify(fields, null, 2));
+
       const contractDataToSave = {
         title: title || "Untitled Template",
         description: description || "",
-        content: content || "",
-        [isTemplate ? "defaultFields" : "fields"]: fields.reduce(
-          (acc, field) => {
-            if (field.fieldName) {
-              acc[field.fieldName] = field.fieldValue;
+        content: content ?? "",
+        ...(isTemplate
+          ? {
+              defaultFields: fields.reduce((acc, field) => {
+                if (field.fieldName.trim()) {
+                  acc[field.fieldName] = {
+                    value: String(field.fieldValue), // Ensure string
+                    mapping: field.mapping || "",
+                  };
+                }
+                return acc;
+              }, {} as Record<string, { value: string; mapping: string }>),
+              tags: tags || [],
             }
-            return acc;
-          },
-          {} as Record<string, string>
-        ),
-        ...(isTemplate && tags ? { tags } : {}),
+          : {
+              fields: fields.reduce((acc, field) => {
+                if (field.fieldName.trim()) {
+                  acc[field.fieldName] = String(field.fieldValue); // Ensure string
+                }
+                return acc;
+              }, {} as Record<string, string>),
+            }),
       };
+
+      // Log payload to debug [object Object]
+      console.log(
+        "Payload to API:",
+        JSON.stringify(contractDataToSave, null, 2)
+      );
 
       setIsSaving(true);
       setSaveError(null);
@@ -98,19 +126,20 @@ export function useSaveContract({
         }
         setLastSaved(new Date().toLocaleTimeString());
       } else {
-        const errorText = await response.text();
-        console.error("Save failed:", response.status, errorText);
-        setSaveError(`Save failed: ${response.status} ${errorText}`);
+        const errorData = await response.json();
+        const errorMessage =
+          errorData.error || `Save failed: ${response.status}`;
+        console.error("Save failed:", response.status, errorMessage);
+        setSaveError(errorMessage);
       }
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
       console.error(
         `Error saving ${isTemplate ? "template" : "contract"}:`,
-        err
+        errorMessage
       );
       setSaveError(
-        `Error saving ${isTemplate ? "template" : "contract"}: ${
-          err instanceof Error ? err.message : "Unknown error"
-        }`
+        `Error saving ${isTemplate ? "template" : "contract"}: ${errorMessage}`
       );
     } finally {
       setIsSaving(false);

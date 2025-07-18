@@ -8,11 +8,13 @@ interface Field {
   id: number;
   fieldName: string;
   fieldValue: string;
+  mapping?: string; // Add mapping to match FieldPicker and ContractPage
 }
 
 interface InspectorProps {
   addField: (field: Field) => void;
   updateField: (field: { fieldName: string; fieldValue: string }) => void;
+  deleteField: (fieldId: number) => void; // Add deleteField prop
   initialFields: Field[];
   content?: string;
   isActive: boolean;
@@ -24,6 +26,7 @@ type TabType = "fields" | "library";
 function Inspector({
   addField,
   updateField,
+  deleteField, // Add to props
   initialFields,
   content,
   isActive,
@@ -32,7 +35,7 @@ function Inspector({
   const [activeTab, setActiveTab] = useState<TabType>("fields");
   return (
     <div
-      className={`fixed top-0 right-0 h-full w-[300px] border-l z-20 bg-white  sm:translate-x-0 ${
+      className={`fixed top-0 right-0 h-full w-[300px] border-l z-20 bg-white sm:translate-x-0 ${
         isActive ? "translate-x-0" : "translate-x-full"
       } flex transition-transform`}
     >
@@ -57,6 +60,7 @@ function Inspector({
           <FieldPicker
             setFinalFields={addField}
             updateField={updateField}
+            deleteField={deleteField} // Pass to FieldPicker
             initialFields={initialFields}
             content={content}
             isTemplate={isTemplate}

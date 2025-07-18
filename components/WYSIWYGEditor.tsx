@@ -789,7 +789,6 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
 
     return (
       <div>
-        <WYSIWYGToolbar editor={editor} />
         <div className="border rounded min-h-fit">
           <div
             onDragOver={handleDragOver}
@@ -804,6 +803,7 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
                 onChange(JSON.stringify(newVal));
               }}
             >
+              <WYSIWYGToolbar editor={editor} />
               <Editable
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
