@@ -29,7 +29,7 @@ async function fetchTemplate(id: string): Promise<TemplateData | null> {
       .lean();
     if (!template) return null;
 
-    console.log("Fetched template:", JSON.stringify(template, null, 2)); // Debug
+    // console.log("Fetched template:", JSON.stringify(template, null, 2)); // Debug
 
     return {
       id: template._id.toString(),

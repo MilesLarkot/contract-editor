@@ -62,7 +62,7 @@ export function useSaveContract({
 
     try {
       // Log fields to debug [object Object]
-      console.log("Fields before save:", JSON.stringify(fields, null, 2));
+      // console.log("Fields before save:", JSON.stringify(fields, null, 2));
 
       const contractDataToSave = {
         title: title || "Untitled Template",
@@ -92,10 +92,10 @@ export function useSaveContract({
       };
 
       // Log payload to debug [object Object]
-      console.log(
-        "Payload to API:",
-        JSON.stringify(contractDataToSave, null, 2)
-      );
+      // console.log(
+      //   "Payload to API:",
+      //   JSON.stringify(contractDataToSave, null, 2)
+      // );
 
       setIsSaving(true);
       setSaveError(null);

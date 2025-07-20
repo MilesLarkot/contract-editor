@@ -62,7 +62,7 @@ export function useContractData({
 
       if (response.ok) {
         const data: ContractData = await response.json();
-        console.log("Fetched contractData:", JSON.stringify(data, null, 2)); // Debug fetched data
+        // console.log("Fetched contractData:", JSON.stringify(data, null, 2)); // Debug fetched data
 
         const validatedFields: Field[] =
           isTemplate && data.defaultFields
@@ -81,7 +81,7 @@ export function useContractData({
                     id: index,
                     fieldName,
                     fieldValue,
-                    mapping: field.mapping || "",
+                    mapping: field.mapping, // Preserve undefined
                   };
                 }
               )
@@ -101,7 +101,7 @@ export function useContractData({
                     id: index,
                     fieldName,
                     fieldValue: value,
-                    mapping: data.defaultFields?.[fieldName]?.mapping || "",
+                    mapping: data.defaultFields?.[fieldName]?.mapping, // Preserve undefined
                   };
                 }
               )

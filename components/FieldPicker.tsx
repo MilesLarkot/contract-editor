@@ -28,7 +28,7 @@ interface Field {
 
 interface FieldPickerProps {
   setFinalFields: (field: Field) => void;
-  updateField: (field: { fieldName: string; fieldValue: string }) => void;
+  updateField: (field: { fieldName: string; fieldValue: string; mapping?: string }) => void;
   deleteField: (fieldId: number) => void;
   initialFields: Field[];
   content?: string;
@@ -49,9 +49,7 @@ function FieldPicker({
 }: FieldPickerProps) {
   const [fields, setFields] = useState<Field[]>(initialFields);
   const [nameErrors, setNameErrors] = useState<Map<number, string>>(new Map());
-  const [editingMappingFieldId, setEditingMappingFieldId] = useState<
-    number | null
-  >(null);
+  const [editingMappingFieldId, setEditingMappingFieldId] = useState<number | null>(null);
   const [tempParty, setTempParty] = useState<string>("");
   const [tempProperty, setTempProperty] = useState<string>("");
 
@@ -59,7 +57,6 @@ function FieldPicker({
     if (!a.fieldName.trim() && !b.fieldName.trim()) return 0;
     if (!a.fieldName.trim()) return -1;
     if (!b.fieldName.trim()) return 1;
-
     return a.fieldName.toLowerCase().localeCompare(b.fieldName.toLowerCase());
   });
 
@@ -101,8 +98,7 @@ function FieldPicker({
     const existingFieldNames = new Set(fields.map((f) => f.fieldName.trim()));
 
     const missingFields = contentFields.filter(
-      (field) =>
-        field.fieldName && !existingFieldNames.has(field.fieldName.trim())
+      (field) => field.fieldName && !existingFieldNames.has(field.fieldName.trim())
     );
 
     if (missingFields.length > 0) {
@@ -162,10 +158,7 @@ function FieldPicker({
 
     window.addEventListener("field-value-updated", handler as EventListener);
     return () =>
-      window.removeEventListener(
-        "field-value-updated",
-        handler as EventListener
-      );
+      window.removeEventListener("field-value-updated", handler as EventListener);
   }, [onFieldValueChange]);
 
   const addFields = useCallback(() => {
@@ -173,15 +166,15 @@ function FieldPicker({
       id: Date.now(),
       fieldName: "",
       fieldValue: "",
-      mapping: "",
+      mapping: isTemplate ? "" : undefined,
     };
     setFields((prev) => [...prev, newField]);
     setFinalFields(newField);
-  }, [setFinalFields]);
+  }, [setFinalFields, isTemplate]);
 
   const handleFieldUpdate = useCallback(
     (updatedField: Field) => {
-      console.log("FieldPicker handleFieldUpdate:", updatedField); // Debug fieldValue
+      // console.log("FieldPicker handleFieldUpdate:", updatedField);
       if (typeof updatedField.fieldValue !== "string") {
         console.error(
           "FieldPicker: fieldValue is not a string:",
@@ -197,6 +190,7 @@ function FieldPicker({
         updateField({
           fieldName: updatedField.fieldName.trim(),
           fieldValue: updatedField.fieldValue,
+          mapping: updatedField.mapping,
         });
       }
     },
@@ -209,17 +203,19 @@ function FieldPicker({
       setFields((prev) =>
         prev.map((f) => (f.id === fieldId ? { ...f, mapping } : f))
       );
-      setFinalFields({
-        id: fieldId,
-        fieldName: fields.find((f) => f.id === fieldId)?.fieldName || "",
-        fieldValue: fields.find((f) => f.id === fieldId)?.fieldValue || "",
-        mapping,
-      });
+      const field = fields.find((f) => f.id === fieldId);
+      if (field && field.fieldName.trim() && !nameErrors.has(fieldId)) {
+        updateField({
+          fieldName: field.fieldName.trim(),
+          fieldValue: field.fieldValue,
+          mapping,
+        });
+      }
       setEditingMappingFieldId(null);
       setTempParty("");
       setTempProperty("");
     },
-    [setFinalFields, fields]
+    [updateField, fields, nameErrors]
   );
 
   const handleDragStart = useCallback(

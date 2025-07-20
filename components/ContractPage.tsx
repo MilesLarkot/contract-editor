@@ -41,7 +41,7 @@ export default function ContractPage({
   const [fields, setFields] = useState<
     { id: number; fieldName: string; fieldValue: string; mapping?: string }[]
   >(() => {
-    console.log("Initial contractData:", JSON.stringify(contractData, null, 2)); // Debug initial data
+    // console.log("Initial contractData:", JSON.stringify(contractData, null, 2)); // Debug initial data
     if (isTemplate && contractData?.defaultFields) {
       return Object.entries(contractData.defaultFields).map(
         ([fieldName, field], index) => {
@@ -132,7 +132,7 @@ export default function ContractPage({
     fieldValue: string;
     mapping?: string;
   }) => {
-    console.log("Updating field:", updatedField);
+    // console.log("Updating field:", updatedField);
     if (typeof updatedField.fieldValue !== "string") {
       console.error("fieldValue is not a string:", updatedField.fieldValue);
       return;
@@ -165,17 +165,17 @@ export default function ContractPage({
   const debouncedSaveRef = useDebouncedSave(saveContract, 2000);
 
   const triggerDebouncedSave = useCallback(() => {
-    console.log(
-      "Triggering save with fields:",
-      JSON.stringify(fields, null, 2)
-    );
+    // console.log(
+    //   "Triggering save with fields:",
+    //   JSON.stringify(fields, null, 2)
+    // );
     debouncedSaveRef.current?.();
   }, [fields]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     debouncedSaveRef.current?.cancel();
-    console.log("Manual save with fields:", JSON.stringify(fields, null, 2));
+    // console.log("Manual save with fields:", JSON.stringify(fields, null, 2));
     await saveContract();
   };
 

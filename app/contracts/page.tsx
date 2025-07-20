@@ -65,10 +65,10 @@ export default function Page() {
           field.value || "",
         ])
       );
-      console.log(
-        "Template defaultFields:",
-        JSON.stringify(Array.from(defaultFieldsMap.entries()), null, 2)
-      ); // Debug
+      // console.log(
+      //   "Template defaultFields:",
+      //   JSON.stringify(Array.from(defaultFieldsMap.entries()), null, 2)
+      // ); // Debug
 
       const contractData = convertTemplateToContract({
         _id: template._id,
@@ -78,7 +78,7 @@ export default function Page() {
         metadata: { category: undefined, description: template.description },
       });
 
-      console.log("Contract data:", JSON.stringify(contractData, null, 2)); // Debug
+      // console.log("Contract data:", JSON.stringify(contractData, null, 2)); // Debug
 
       if (!(contractData.fields instanceof Map)) {
         console.error("contractData.fields is not a Map:", contractData.fields);
@@ -86,7 +86,7 @@ export default function Page() {
       }
 
       const fieldsObject = Object.fromEntries(contractData.fields);
-      console.log("Fields for API:", JSON.stringify(fieldsObject, null, 2)); // Debug
+      // console.log("Fields for API:", JSON.stringify(fieldsObject, null, 2)); // Debug
 
       const res = await fetch("/api/contracts", {
         method: "POST",
