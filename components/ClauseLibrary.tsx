@@ -3,9 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Pencil, SquarePlus, Trash } from "lucide-react";
 
 interface Clause {
-  _id: string;
+  id: string;
   title: string;
   content: string;
+  metadata?: {
+    createdBy?: string;
+    category?: string;
+  };
 }
 
 function ClauseLibrary() {
@@ -18,14 +22,25 @@ function ClauseLibrary() {
   const [editClauseTitle, setEditClauseTitle] = useState("");
   const [editClauseContent, setEditClauseContent] = useState("");
 
+  const API_BASE_URL = "http://localhost:8091/api/legal";
+
   useEffect(() => {
     async function fetchClauses() {
       try {
-        const response = await fetch("/api/clauses");
+        const response = await fetch(`${API_BASE_URL}/clauses`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch clauses");
+        }
         const data = await response.json();
-        setClauses(data);
+        // Map backend 'id' to frontend 'id'
+        const mappedData = data.map((clause: any) => ({
+          ...clause,
+          id: clause.id,
+        }));
+        setClauses(mappedData);
       } catch (error) {
         console.error("Failed to fetch clauses:", error);
+        setError("Failed to fetch clauses");
       } finally {
         setIsLoading(false);
       }
@@ -38,7 +53,7 @@ function ClauseLibrary() {
     clause: Clause
   ) => {
     e.dataTransfer.setData("text/plain", clause.content);
-    e.dataTransfer.setData("application/clause-id", clause._id);
+    e.dataTransfer.setData("application/clause-id", clause.id);
   };
 
   const handleAddClause = async (e: React.FormEvent) => {
@@ -49,13 +64,13 @@ function ClauseLibrary() {
     }
 
     try {
-      const response = await fetch("/api/clauses", {
+      const response = await fetch(`${API_BASE_URL}/clauses`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: newClauseTitle,
           content: newClauseContent,
-          metadata: {},
+          metadata: { createdBy: "user", category: "" }, // Adjust as needed
         }),
       });
 
@@ -64,7 +79,7 @@ function ClauseLibrary() {
       }
 
       const newClause = await response.json();
-      setClauses([...clauses, newClause]);
+      setClauses([...clauses, { ...newClause, id: newClause.id }]);
       setNewClauseTitle("");
       setNewClauseContent("");
       setError(null);
@@ -82,12 +97,13 @@ function ClauseLibrary() {
     }
 
     try {
-      const response = await fetch(`/api/clauses/${clauseId}`, {
+      const response = await fetch(`${API_BASE_URL}/clauses/${clauseId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: editClauseTitle,
           content: editClauseContent,
+          metadata: { createdBy: "user", category: "" }, // Adjust as needed
         }),
       });
 
@@ -98,7 +114,9 @@ function ClauseLibrary() {
       const updatedClause = await response.json();
       setClauses(
         clauses.map((clause) =>
-          clause._id === clauseId ? updatedClause : clause
+          clause.id === clauseId
+            ? { ...updatedClause, id: updatedClause.id }
+            : clause
         )
       );
       setEditingClauseId(null);
@@ -113,7 +131,7 @@ function ClauseLibrary() {
 
   const handleDeleteClause = async (clauseId: string) => {
     try {
-      const response = await fetch(`/api/clauses/${clauseId}`, {
+      const response = await fetch(`${API_BASE_URL}/clauses/${clauseId}`, {
         method: "DELETE",
       });
 
@@ -121,7 +139,7 @@ function ClauseLibrary() {
         throw new Error("Failed to delete clause");
       }
 
-      setClauses(clauses.filter((clause) => clause._id !== clauseId));
+      setClauses(clauses.filter((clause) => clause.id !== clauseId));
     } catch (error) {
       console.error("Error deleting clause:", error);
       setError("Failed to delete clause");
@@ -129,7 +147,7 @@ function ClauseLibrary() {
   };
 
   const startEditing = (clause: Clause) => {
-    setEditingClauseId(clause._id);
+    setEditingClauseId(clause.id);
     setEditClauseTitle(clause.title);
     setEditClauseContent(clause.content);
   };
@@ -177,10 +195,10 @@ function ClauseLibrary() {
           <p className="text-gray-500">No clauses available</p>
         ) : (
           clauses.map((clause) => (
-            <div key={clause._id} className="border px-2 py-1 rounded">
-              {editingClauseId === clause._id ? (
+            <div key={clause.id} className="border px-2 py-1 rounded">
+              {editingClauseId === clause.id ? (
                 <form
-                  onSubmit={(e) => handleEditClause(e, clause._id)}
+                  onSubmit={(e) => handleEditClause(e, clause.id)}
                   className="space-y-2"
                 >
                   <input
@@ -226,7 +244,7 @@ function ClauseLibrary() {
                       variant="destructive"
                       size="icon"
                       className="size-8"
-                      onClick={() => handleDeleteClause(clause._id)}
+                      onClick={() => handleDeleteClause(clause.id)}
                     >
                       <Trash size="icon" />
                     </Button>

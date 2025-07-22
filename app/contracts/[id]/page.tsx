@@ -9,8 +9,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
-import Contract from "@/models/contract";
-import connectDB from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -22,13 +20,27 @@ interface ContractData {
 }
 
 async function fetchContract(id: string): Promise<ContractData | null> {
-  await connectDB();
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8091/api/legal";
   try {
-    const contract = await Contract.findById(id)
-      .select("title content fields")
-      .lean();
-    // console.log("Fetched contract:", contract);
-    return contract as ContractData | null;
+    const res = await fetch(`${API_BASE_URL}/contracts/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store", // Ensure fresh data for dynamic page
+    });
+    if (!res.ok) {
+      console.error(`Error fetching contract: ${res.status} ${res.statusText}`);
+      return null;
+    }
+    const contract = await res.json();
+    // Map Spring Boot response to ContractData interface
+    return {
+      id: contract.id,
+      title: contract.title,
+      content: contract.content,
+      fields: contract.fields || {},
+    };
   } catch (err) {
     console.error("Error fetching contract:", err);
     return null;

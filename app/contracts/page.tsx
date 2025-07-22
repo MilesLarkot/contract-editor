@@ -26,7 +26,7 @@ import { Switch } from "@/components/ui/switch";
 import { useConvertTemplateToContract } from "@/hooks/useConvertTemplateToContract";
 
 interface Template {
-  _id: string;
+  id: string; // Changed from _id to id to match API
   title: string;
   content: string;
   description: string;
@@ -40,15 +40,28 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { convertTemplateToContract } = useConvertTemplateToContract();
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8091/api/legal";
 
   useEffect(() => {
     if (!dialogOpen) return;
-    fetch("/api/templates")
+    fetch(`${API_BASE_URL}/templates`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch templates");
         return res.json();
       })
-      .then((data) => setTemplates(data))
+      .then((data) =>
+        setTemplates(
+          data.map((template: any) => ({
+            id: template.id,
+            title: template.title,
+            content: template.content,
+            description: template.metadata?.description || "",
+            updatedAt: template.updatedAt,
+            defaultFields: template.defaultFields || {},
+          }))
+        )
+      )
       .catch((err) => {
         setError(err.message);
         console.error("Error fetching templates:", err);
@@ -65,20 +78,14 @@ export default function Page() {
           field.value || "",
         ])
       );
-      // console.log(
-      //   "Template defaultFields:",
-      //   JSON.stringify(Array.from(defaultFieldsMap.entries()), null, 2)
-      // ); // Debug
 
       const contractData = convertTemplateToContract({
-        _id: template._id,
+        _id: template.id, // Changed from _id to id
         title: template.title,
         content: template.content,
         defaultFields: defaultFieldsMap,
         metadata: { category: undefined, description: template.description },
       });
-
-      // console.log("Contract data:", JSON.stringify(contractData, null, 2)); // Debug
 
       if (!(contractData.fields instanceof Map)) {
         console.error("contractData.fields is not a Map:", contractData.fields);
@@ -86,9 +93,8 @@ export default function Page() {
       }
 
       const fieldsObject = Object.fromEntries(contractData.fields);
-      // console.log("Fields for API:", JSON.stringify(fieldsObject, null, 2)); // Debug
 
-      const res = await fetch("/api/contracts", {
+      const res = await fetch(`${API_BASE_URL}/contracts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -171,7 +177,7 @@ export default function Page() {
                       </Link>
                       {templates.map((tpl) => (
                         <div
-                          key={tpl._id}
+                          key={tpl.id} // Changed from _id to id
                           onClick={() => createContractFromTemplate(tpl)}
                         >
                           <TemplatePreview
@@ -195,7 +201,7 @@ export default function Page() {
                       </Link>
                       {templates.map((tpl) => (
                         <div
-                          key={tpl._id}
+                          key={tpl.id} // Changed from _id to id
                           className="w-full cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:translate-x-2 transition-all duration-300 group hover:border-l-4 pl-2 border-primary rounded"
                           onClick={() => createContractFromTemplate(tpl)}
                         >

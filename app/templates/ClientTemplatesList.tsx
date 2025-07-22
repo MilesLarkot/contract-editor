@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
-// import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Trash, Loader2 } from "lucide-react";
 import {
@@ -28,7 +27,7 @@ interface Template {
   content: string;
   description: string;
   updatedAt: string;
-  defaultFields?: Record<string, string>;
+  defaultFields?: Record<string, { value: string; mapping?: string }>;
   tags?: string[];
 }
 
@@ -76,12 +75,26 @@ export default function ClientTemplatesList() {
   const fetchTemplates = async (query: string = "") => {
     setLoading(true);
     try {
-      const url = new URL("/api/templates", window.location.origin);
+      const url = new URL("http://localhost:8091/api/legal/templates");
       if (query) url.searchParams.set("q", query);
-      const res = await fetch(url.toString());
+      const res = await fetch(url.toString(), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (!res.ok) throw new Error("Failed to fetch templates");
       const data = await res.json();
-      setTemplates(data);
+      // Map Spring Boot response to frontend Template interface
+      const mappedTemplates = data.map((template: any) => ({
+        id: template.id,
+        title: template.title,
+        content: template.content,
+        description: template.metadata?.description || "",
+        updatedAt: template.updatedAt,
+        defaultFields: template.defaultFields,
+        tags: template.metadata?.tags || [],
+      }));
+      setTemplates(mappedTemplates);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch templates"
@@ -107,8 +120,11 @@ export default function ClientTemplatesList() {
     const confirm = window.confirm("Sure you wanna delete this template?");
     if (!confirm) return;
 
-    const res = await fetch(`/api/templates/${id}`, {
+    const res = await fetch(`http://localhost:8091/api/legal/templates/${id}`, {
       method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (res.ok) {
@@ -150,7 +166,6 @@ export default function ClientTemplatesList() {
               <TableHead className="w-fit">Title</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Tags</TableHead>
-              {/* <TableHead>Last Updated</TableHead> */}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -223,16 +238,11 @@ export default function ClientTemplatesList() {
                     </Tooltip>
                   </TooltipProvider>
                 </TableCell>
-                {/* <TableCell>
-                  {template.updatedAt
-                    ? format(new Date(template.updatedAt), "PPP")
-                    : "Unknown"}
-                </TableCell> */}
                 <TableCell>
                   <Button
                     variant="destructive"
                     size="icon"
-                    className="size-8   "
+                    className="size-8"
                     onClick={(e) => {
                       e.stopPropagation();
                       deleteTemplate(template.id);

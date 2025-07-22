@@ -223,7 +223,7 @@ export default function ContractPage({
         {previewPDF ? (
           <PreviewPDF title={title} content={content} />
         ) : (
-          <div className="bg-white drop-shadow-[5px_5px_0_rgba(0,0,0,0.10)] min-h-fit">
+          <div>
             <WYSIWYGEditor
               ref={editorRef}
               value={content}

@@ -334,14 +334,14 @@ const WYSIWYGToolbar = ({ editor }: WYSIWYGToolbarProps) => {
   };
 
   return (
-    <div className="top-16 right-0 z-50 transition-all duration-300 ease-in-out sticky">
+    <div className="top-[340px] lef-4 ml-4 z-50 transition-all duration-300 ease-in-out fixed">
       {/* Floating Button */}
       <Button
         onClick={toggleToolbar}
         className={`rounded-full h-12 w-12 shadow-lg hover:shadow-xl transition-all duration-300 ${
           isExpanded
             ? "bg-primary  text-white"
-            : "bg-white hover:bg-primary hover:text-primary-foreground text-gray-700 border border-gray-200"
+            : "bg-white hover:bg-primary hover:text-primary-foreground text-gray-700 border border-primary"
         }`}
         title={isExpanded ? "Collapse toolbar" : "Expand toolbar"}
       >

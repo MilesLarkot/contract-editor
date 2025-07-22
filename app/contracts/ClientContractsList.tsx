@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 
 interface Contract {
-  _id: string;
+  id: string;
   title: string;
   content: string;
   updatedAt: string;
@@ -68,9 +68,13 @@ export default function ClientContractsList() {
   const fetchContracts = async (query: string = "") => {
     setLoading(true);
     try {
-      const url = new URL("/api/contracts", window.location.origin);
+      const url = new URL("http://localhost:8091/api/legal/contracts");
       if (query) url.searchParams.set("q", query);
-      const res = await fetch(url.toString());
+      const res = await fetch(url.toString(), {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (!res.ok) throw new Error("Failed to fetch contracts");
       const data = await res.json();
       setContracts(data);
@@ -99,12 +103,15 @@ export default function ClientContractsList() {
     const confirm = window.confirm("Sure you wanna delete this contract?");
     if (!confirm) return;
 
-    const res = await fetch(`/api/contracts/${id}`, {
+    const res = await fetch(`http://localhost:8091/api/legal/contracts/${id}`, {
       method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
     if (res.ok) {
-      setContracts((prev) => prev.filter((c: Contract) => c._id !== id));
+      setContracts((prev) => prev.filter((c: Contract) => c.id !== id));
     } else {
       alert("Failed to delete contract");
     }
@@ -142,9 +149,9 @@ export default function ClientContractsList() {
           <TableBody>
             {contracts.map((contract: Contract) => (
               <TableRow
-                key={contract._id}
+                key={contract.id}
                 className="cursor-pointer bg-white"
-                onClick={() => router.push(`/contracts/${contract._id}`)}
+                onClick={() => router.push(`/contracts/${contract.id}`)}
               >
                 <TableCell>{contract.title}</TableCell>
                 <TableCell>
@@ -159,7 +166,7 @@ export default function ClientContractsList() {
                     className="size-8"
                     onClick={(e) => {
                       e.stopPropagation();
-                      deleteContract(contract._id);
+                      deleteContract(contract.id);
                     }}
                   >
                     <Trash />

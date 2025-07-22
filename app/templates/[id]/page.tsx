@@ -9,8 +9,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@radix-ui/react-separator";
 import { notFound } from "next/navigation";
-import connectDB from "@/lib/db";
-import Template from "@/models/template";
 
 export const dynamic = "force-dynamic";
 
@@ -19,23 +17,32 @@ interface TemplateData {
   title: string;
   content: string;
   defaultFields: Record<string, { value: string; mapping?: string }>;
+  description: string;
+  tags: string[];
 }
 
 async function fetchTemplate(id: string): Promise<TemplateData | null> {
-  await connectDB();
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8091/api/legal";
   try {
-    const template = await Template.findById(id)
-      .select("title content defaultFields")
-      .lean();
-    if (!template) return null;
-
-    // console.log("Fetched template:", JSON.stringify(template, null, 2)); // Debug
-
+    const res = await fetch(`${API_BASE_URL}/templates/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      console.error(`Error fetching template: ${res.status} ${res.statusText}`);
+      return null;
+    }
+    const template = await res.json();
     return {
-      id: template._id.toString(),
+      id: template.id,
       title: template.title,
       content: template.content,
       defaultFields: template.defaultFields || {},
+      description: template.metadata?.description || "",
+      tags: template.metadata?.tags || [],
     };
   } catch (err) {
     console.error("Error fetching template:", err);

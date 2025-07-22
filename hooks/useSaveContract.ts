@@ -18,7 +18,7 @@ interface ContractData {
 }
 
 interface SaveContractResult {
-  saveContract: () => Promise<void>;
+  saveContract: () => Promise<string | void>;
   isSaving: boolean;
   lastSaved: string | null;
   saveError: string | null;
@@ -41,6 +41,8 @@ export function useSaveContract({
     initialContractId
   );
   const isSavingRef = useRef(false);
+  const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8091/api/legal";
 
   const saveContract = useCallback(async () => {
     if (isSavingRef.current) {
@@ -61,11 +63,8 @@ export function useSaveContract({
     }
 
     try {
-      // Log fields to debug [object Object]
-      // console.log("Fields before save:", JSON.stringify(fields, null, 2));
-
       const contractDataToSave = {
-        title: title || "Untitled Template",
+        title: title || "Untitled",
         description: description || "",
         content: content ?? "",
         ...(isTemplate
@@ -73,37 +72,41 @@ export function useSaveContract({
               defaultFields: fields.reduce((acc, field) => {
                 if (field.fieldName.trim()) {
                   acc[field.fieldName] = {
-                    value: String(field.fieldValue), // Ensure string
+                    value: String(field.fieldValue),
                     mapping: field.mapping || "",
                   };
                 }
                 return acc;
               }, {} as Record<string, { value: string; mapping: string }>),
-              tags: tags || [],
             }
           : {
               fields: fields.reduce((acc, field) => {
                 if (field.fieldName.trim()) {
-                  acc[field.fieldName] = String(field.fieldValue); // Ensure string
+                  acc[field.fieldName] = String(field.fieldValue);
                 }
                 return acc;
               }, {} as Record<string, string>),
             }),
+        metadata: {
+          description: description || "",
+          tags: isTemplate ? tags || [] : undefined,
+        },
       };
 
-      // Log payload to debug [object Object]
-      // console.log(
-      //   "Payload to API:",
-      //   JSON.stringify(contractDataToSave, null, 2)
-      // );
+      console.log(
+        "Payload to API:",
+        JSON.stringify(contractDataToSave, null, 2)
+      );
 
       setIsSaving(true);
       setSaveError(null);
 
-      const method = contractId ? "PATCH" : "POST";
+      const method = contractId ? "PUT" : "POST";
       const url = contractId
-        ? `/api/${isTemplate ? "templates" : "contracts"}/${contractId}`
-        : `/api/${isTemplate ? "templates" : "contracts"}`;
+        ? `${API_BASE_URL}/${
+            isTemplate ? "templates" : "contracts"
+          }/${contractId}`
+        : `${API_BASE_URL}/${isTemplate ? "templates" : "contracts"}`;
 
       const response = await fetch(url, {
         method,
@@ -113,25 +116,28 @@ export function useSaveContract({
         body: JSON.stringify(contractDataToSave),
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (!contractId && (result._id || result.id)) {
-          const newId = result._id || result.id;
-          setContractId(newId);
-          window.history.replaceState(
-            null,
-            "",
-            `/${isTemplate ? "templates" : "contracts"}/${newId}`
-          );
-        }
-        setLastSaved(new Date().toLocaleTimeString());
-      } else {
-        const errorData = await response.json();
-        const errorMessage =
-          errorData.error || `Save failed: ${response.status}`;
-        console.error("Save failed:", response.status, errorMessage);
-        setSaveError(errorMessage);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Raw error response:", errorText);
+        throw new Error(
+          `Failed to save ${isTemplate ? "template" : "contract"}: ${
+            response.status
+          } ${errorText}`
+        );
       }
+
+      const result = await response.json();
+      console.log("API response:", JSON.stringify(result, null, 2));
+      if (!contractId && result.id) {
+        setContractId(result.id);
+        window.history.replaceState(
+          null,
+          "",
+          `/${isTemplate ? "templates" : "contracts"}/${result.id}`
+        );
+        return result.id;
+      }
+      setLastSaved(new Date().toLocaleTimeString());
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       console.error(
@@ -141,6 +147,7 @@ export function useSaveContract({
       setSaveError(
         `Error saving ${isTemplate ? "template" : "contract"}: ${errorMessage}`
       );
+      throw err;
     } finally {
       setIsSaving(false);
       isSavingRef.current = false;

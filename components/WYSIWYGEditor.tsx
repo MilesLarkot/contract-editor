@@ -788,32 +788,34 @@ const WYSIWYGEditor = forwardRef<WYSIWYGEditorHandle, WYSIWYGEditorProps>(
     // };
 
     return (
-      <div>
-        <div className="border rounded min-h-fit">
-          <div
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            className="min-h-[600px] mb-12 p-4"
-          >
-            <Slate
-              editor={editor}
-              initialValue={slateValue}
-              onChange={(newVal) => {
-                setInternalValue(newVal);
-                onChange(JSON.stringify(newVal));
-              }}
+      <>
+        <WYSIWYGToolbar editor={editor} />
+        <div className="bg-white drop-shadow-[5px_5px_0_rgba(0,0,0,0.10)] min-h-fit">
+          <div className="border rounded min-h-fit">
+            <div
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              className="min-h-[600px] mb-12 p-4"
             >
-              <WYSIWYGToolbar editor={editor} />
-              <Editable
-                renderElement={renderElement}
-                renderLeaf={renderLeaf}
-                placeholder={placeholder}
-                className="h-full outline-none"
-              />
-            </Slate>
+              <Slate
+                editor={editor}
+                initialValue={slateValue}
+                onChange={(newVal) => {
+                  setInternalValue(newVal);
+                  onChange(JSON.stringify(newVal));
+                }}
+              >
+                <Editable
+                  renderElement={renderElement}
+                  renderLeaf={renderLeaf}
+                  placeholder={placeholder}
+                  className="h-full outline-none"
+                />
+              </Slate>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 );
